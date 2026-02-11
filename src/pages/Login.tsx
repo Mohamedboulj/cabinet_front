@@ -46,7 +46,7 @@ const Login: React.FC = () => {
           <p className="text-600 text-lg">Système de Gestion Médicale</p>
         </div>
 
-        <Card className="shadow-4">
+        <Card className="shadow-8 p-6 border-round-3xl md:w-30rem m-auto">
           <h2 className="text-2xl font-semibold text-center mb-4">Connexion</h2>
 
           {error && (
@@ -63,7 +63,6 @@ const Login: React.FC = () => {
                 Email
               </label>
               <span className="p-input-icon-left w-full">
-                <i className="pi pi-envelope" />
                 <InputText
                   id="email"
                   type="email"
@@ -114,7 +113,7 @@ const Login: React.FC = () => {
         </Card>
 
         <div className="text-center mt-4 text-500 text-sm">
-          <p>&copy; 2024 MediCare Pro. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} MediCare Pro. Tous droits réservés.</p>
         </div>
       </div>
     </div>

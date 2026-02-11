@@ -17,7 +17,7 @@ export const authService = {
 
   async getCurrentUser(): Promise<User> {
     const response = await api.get('/me');
-    return response.data.user;
+    return { ...response.data.user, roles: response.data.roles };
   },
 
   async logout(): Promise<void> {

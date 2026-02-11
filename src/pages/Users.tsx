@@ -10,6 +10,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { userService } from "../services/userService.ts";
 
 const Users: React.FC = () => {
   const toast = useRef<Toast>(null);
@@ -18,51 +19,27 @@ const Users: React.FC = () => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Mock data
-    setUsers([
-      {
-        id: 1,
-        email: 'admin@medical.com',
-        firstName: 'Admin',
-        lastName: 'System',
-        fullName: 'Admin System',
-        phone: '0600000000',
-        roles: ['ROLE_ADMIN'],
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-      },
-      {
-        id: 2,
-        email: 'dr.martin@medical.com',
-        firstName: 'Pierre',
-        lastName: 'Martin',
-        fullName: 'Dr. Pierre Martin',
-        phone: '0612345678',
-        specialty: 'Médecine générale',
-        licenseNumber: '12345',
-        roles: ['ROLE_MEDECIN'],
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-      },
-      {
-        id: 3,
-        email: 'secretaire@medical.com',
-        firstName: 'Marie',
-        lastName: 'Dupont',
-        fullName: 'Marie Dupont',
-        phone: '0698765432',
-        roles: ['ROLE_SECRETAIRE'],
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-      },
-    ]);
-    setLoading(false);
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await userService.getUsers();
+      setUsers(response.data);
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de charger les utilisateurs',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const roleBodyTemplate = (rowData: User) => {
     const roleLabels: Record<string, string> = {
@@ -101,7 +78,7 @@ const Users: React.FC = () => {
 
   const confirmDelete = (user: User) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer ${user.fullName} ?`,
+      message: `Êtes-vous sûr de vouloir supprimer ${user.firstName} ${user.lastName} ?`,
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
@@ -114,13 +91,35 @@ const Users: React.FC = () => {
     });
   };
 
-  const handleSubmit = () => {
-    toast.current?.show({
-      severity: 'success',
-      summary: 'Succès',
-      detail: editingUser ? 'Utilisateur modifié' : 'Utilisateur créé',
-    });
-    setDialogVisible(false);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      if (editingUser) {
+        // await userService.updateUser(editingUser.id, formData);
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Utilisateur mis à jour',
+        });
+      } else {
+        await userService.createUser(formData);
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Utilisateur créé',
+        });
+      }
+      setDialogVisible(false);
+      loadUsers();
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: error.response?.data?.message || 'Une erreur est survenue',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const dialogFooter = (
@@ -134,6 +133,7 @@ const Users: React.FC = () => {
       <Button
         label={editingUser ? 'Modifier' : 'Créer'}
         icon="pi pi-check"
+        loading={submitting}
         onClick={handleSubmit}
       />
     </div>
@@ -166,13 +166,14 @@ const Users: React.FC = () => {
         className="shadow-2"
       >
         <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-        <Column field="fullName" header="Nom" sortable />
+        <Column field="lastName" header="Nom" sortable />
+        <Column field="firstName" header="Prénom" sortable />
         <Column field="email" header="Email" sortable />
         <Column field="phone" header="Téléphone" />
         <Column field="specialty" header="Spécialité" />
         <Column field="roles" header="Rôles" body={roleBodyTemplate} />
         <Column field="isActive" header="Statut" body={statusBodyTemplate} sortable />
-        <Column 
+        <Column
           body={(rowData) => (
             <div className="flex gap-1">
               <Button
@@ -275,6 +276,7 @@ const Users: React.FC = () => {
                 type="password"
                 className="w-full"
                 placeholder="Mot de passe"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
           )}

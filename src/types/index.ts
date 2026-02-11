@@ -4,13 +4,13 @@ export interface User {
   firstName: string;
   lastName: string;
   fullName?: string;
-  phone?: string;
-  specialty?: string;
-  licenseNumber?: string;
+  phone?: string | null;
+  specialty?: string | null;
+  licenseNumber?: string | null;
   roles: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isActive: boolean | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface Patient {

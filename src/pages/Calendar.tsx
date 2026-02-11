@@ -6,7 +6,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { appointmentService } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
-import type { Appointment, Patient } from '../types';
+import { userService } from '../services/userService';
+import type { Appointment, Patient, User } from '../types';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Calendar as PrimeCalendar } from 'primereact/calendar';
@@ -26,7 +27,8 @@ const Calendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<User[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   
   const [formData, setFormData] = useState<{
     patientId?: number;
@@ -40,6 +42,7 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     loadEvents();
+    loadDoctors();
   }, []);
 
   const loadEvents = async () => {
@@ -64,11 +67,34 @@ const Calendar: React.FC = () => {
     }
   };
 
-  const searchPatients = async (query: string) => {
-    if (query.length < 2) return;
+  const loadDoctors = async () => {
     try {
-      const response = await patientService.searchPatients(query);
-      setPatients(response.data);
+      const response = await userService.getUsers();
+      const doctorUsers = response.data
+        .filter(user => user.roles.includes('ROLE_MEDECIN'))
+        .map(user => ({ ...user, fullName: `${user.firstName} ${user.lastName}` }));
+      setDoctors(doctorUsers);
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de charger les médecins',
+      });
+    }
+  };
+
+  const searchPatients = async (event: { query: string }) => {
+    if (event.query.length < 2) {
+      setPatients([]);
+      return;
+    }
+    try {
+      const response = await patientService.searchPatients(event.query);
+      const patientsWithFullName = response.data.map(p => ({
+        ...p,
+        fullName: `${p.firstName} ${p.lastName}`
+      }));
+      setPatients(patientsWithFullName);
     } catch (error) {
       console.error('Error searching patients:', error);
     }
@@ -255,11 +281,14 @@ const Calendar: React.FC = () => {
           <div className="field">
             <label className="block font-medium mb-2">Patient *</label>
             <AutoComplete
-              value={patients.find(p => p.id === formData.patientId)}
+              value={selectedPatient}
               suggestions={patients}
-              completeMethod={(e) => searchPatients(e.query)}
+              completeMethod={searchPatients}
               field="fullName"
-              onChange={(e) => setFormData({ ...formData, patientId: e.value?.id })}
+              onChange={(e) => {
+                setSelectedPatient(e.value);
+                setFormData({ ...formData, patientId: e.value?.id });
+              }}
               placeholder="Rechercher un patient..."
               className="w-full"
             />

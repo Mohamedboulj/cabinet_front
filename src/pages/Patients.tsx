@@ -212,7 +212,7 @@ const Patients: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un patient..."
             className="w-full"
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
         </span>
         <Button icon="pi pi-search" onClick={handleSearch} />

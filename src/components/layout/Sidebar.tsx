@@ -172,7 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
 
   return (
     <aside 
-      className="fixed left-0 top-16 h-full w-64 surface-card border-right-1 surface-border overflow-y-auto"
+      className="mt-7 left-0 top-16 h-full w-64 surface-card border-right-1 surface-border overflow-y-auto"
       style={{ zIndex: 100 }}
     >
       <div className="p-3">
