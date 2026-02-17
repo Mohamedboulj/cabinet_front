@@ -1,46 +1,150 @@
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { consultationService } from '../services/consultationService';
+import type { Consultation } from '../types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { Toast } from 'primereact/toast';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const ConsultationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useRef<Toast>(null);
+  const [consultation, setConsultation] = useState<Consultation | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock consultation data
-  const consultation = {
-    id: parseInt(id || '1'),
-    patient: { id: 1, firstName: 'Jean', lastName: 'Dupont', fullName: 'Jean Dupont', phone: '0612345678', createdAt: '', updatedAt: '' },
-    doctor: { id: 1, email: 'doc@example.com', firstName: 'Dr.', lastName: 'Martin', fullName: 'Dr. Martin', roles: ['ROLE_MEDECIN'], isActive: true, createdAt: '', updatedAt: '' },
-    reason: 'Consultation de routine',
-    anamnesis: 'Patient se plaint de maux de tête fréquents et de fatigue.',
-    examination: 'TA: 140/90, Pouls: 78/min, Temp: 36.8°C',
-    diagnosis: 'Hypertension artérielle légère',
-    recommendations: 'Surveillance de la tension artérielle. Régime alimentaire pauvre en sel.',
-    bloodPressure: '140/90',
-    weight: '75.5',
-    temperature: '36.8',
-    heartRate: 78,
-    status: 'COMPLETED',
-    isPaid: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    prescriptions: [
-      {
-        id: 1,
-        medicationName: 'Amlodipine',
-        dosage: '5mg',
-        frequency: '1 fois par jour',
-        duration: '30 jours',
-        instructions: 'Prendre le matin',
-      },
-    ],
+  useEffect(() => {
+    if (id) {
+      loadConsultation(parseInt(id));
+    }
+  }, [id]);
+
+  const loadConsultation = async (consultationId: number) => {
+    setLoading(true);
+    try {
+      const response = await consultationService.getConsultation(consultationId);
+      setConsultation(response.data);
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de charger la consultation',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleComplete = async () => {
+    if (!consultation) return;
+    try {
+      await consultationService.completeConsultation(consultation.id);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Succès',
+        detail: 'Consultation terminée',
+      });
+      loadConsultation(consultation.id);
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de terminer la consultation',
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    if (!consultation) return;
+    confirmDialog({
+      message: 'Êtes-vous sûr de vouloir annuler cette consultation ?',
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await consultationService.cancelConsultation(consultation.id);
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Consultation annulée',
+          });
+          loadConsultation(consultation.id);
+        } catch (error) {
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Impossible d'annuler la consultation",
+          });
+        }
+      },
+    });
+  };
+
+  const handleDelete = () => {
+    if (!consultation) return;
+    confirmDialog({
+      message: `Êtes-vous sûr de vouloir supprimer la consultation #${consultation.id} ?`,
+      header: 'Confirmation de suppression',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await consultationService.deleteConsultation(consultation.id);
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Consultation supprimée',
+          });
+          navigate('/consultations');
+        } catch (error: any) {
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: error.response?.data?.error || 'Impossible de supprimer la consultation',
+          });
+        }
+      },
+    });
+  };
+
+  const getStatusTag = (status: string) => {
+    const statusMap: Record<string, { label: string; severity: 'success' | 'warning' | 'danger' }> = {
+      'IN_PROGRESS': { label: 'En cours', severity: 'warning' },
+      'COMPLETED': { label: 'Terminée', severity: 'success' },
+      'CANCELLED': { label: 'Annulée', severity: 'danger' },
+    };
+    const s = statusMap[status] || { label: status, severity: 'warning' };
+    return <Tag value={s.label} severity={s.severity} />;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <ProgressSpinner />
+      </div>
+    );
+  }
+
+  if (!consultation) {
+    return (
+      <div className="flex flex-column align-items-center justify-content-center" style={{ minHeight: '400px' }}>
+        <i className="pi pi-exclamation-circle text-4xl text-orange-500 mb-3"></i>
+        <h2>Consultation introuvable</h2>
+        <Button label="Retour aux consultations" icon="pi pi-arrow-left" onClick={() => navigate('/consultations')} />
+      </div>
+    );
+  }
 
   return (
     <div>
+      <Toast ref={toast} />
+      <ConfirmDialog />
+
       {/* Header */}
       <div className="flex justify-content-between align-items-start mb-4">
         <div>
@@ -52,10 +156,7 @@ const ConsultationDetail: React.FC = () => {
           />
           <h1 className="text-3xl font-bold m-0">Consultation #{consultation.id}</h1>
           <div className="flex gap-2 mt-2">
-            <Tag 
-              value={consultation.status === 'COMPLETED' ? 'Terminée' : 'En cours'}
-              severity={consultation.status === 'COMPLETED' ? 'success' : 'warning'}
-            />
+            {getStatusTag(consultation.status)}
             {consultation.isPaid ? (
               <Tag icon="pi pi-check" value="Payée" severity="success" />
             ) : (
@@ -64,10 +165,27 @@ const ConsultationDetail: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          {consultation.status === 'IN_PROGRESS' && (
+            <>
+              <Button
+                label="Terminer"
+                icon="pi pi-check-circle"
+                className="p-button-success"
+                onClick={handleComplete}
+              />
+              <Button
+                label="Annuler"
+                icon="pi pi-times-circle"
+                className="p-button-secondary"
+                onClick={handleCancel}
+              />
+            </>
+          )}
           <Button
-            label="Modifier"
-            icon="pi pi-pencil"
-            className="p-button-warning"
+            label="Supprimer"
+            icon="pi pi-trash"
+            className="p-button-danger"
+            onClick={handleDelete}
           />
           <Button
             label="Imprimer"
@@ -82,15 +200,15 @@ const ConsultationDetail: React.FC = () => {
         <div className="col-12 md:col-6">
           <Card className="shadow-2" title="Patient">
             <div className="flex flex-column gap-2">
-              <div><strong>Nom:</strong> {consultation.patient.fullName}</div>
-              <div><strong>Téléphone:</strong> {consultation.patient.phone}</div>
+              <div><strong>Nom:</strong> {consultation.patient?.fullName || `${consultation.patient?.firstName} ${consultation.patient?.lastName}`}</div>
+              <div><strong>Téléphone:</strong> {consultation.patient?.phone}</div>
             </div>
           </Card>
         </div>
         <div className="col-12 md:col-6">
           <Card className="shadow-2" title="Médecin">
             <div className="flex flex-column gap-2">
-              <div><strong>Nom:</strong> {consultation.doctor.fullName}</div>
+              <div><strong>Nom:</strong> {consultation.doctor?.fullName || `${consultation.doctor?.firstName} ${consultation.doctor?.lastName}`}</div>
               <div><strong>Date:</strong> {new Date(consultation.createdAt).toLocaleString('fr-FR')}</div>
             </div>
           </Card>
@@ -103,22 +221,27 @@ const ConsultationDetail: React.FC = () => {
           <div className="grid">
             <div className="col-12 md:col-6">
               <Card className="shadow-2 mb-3" title="Motif">
-                <p>{consultation.reason}</p>
+                <p>{consultation.reason || '-'}</p>
               </Card>
               <Card className="shadow-2 mb-3" title="Anamnèse">
-                <p>{consultation.anamnesis}</p>
+                <p>{consultation.anamnesis || '-'}</p>
               </Card>
               <Card className="shadow-2" title="Examen clinique">
-                <p>{consultation.examination}</p>
+                <p>{consultation.examination || '-'}</p>
               </Card>
             </div>
             <div className="col-12 md:col-6">
               <Card className="shadow-2 mb-3" title="Diagnostic">
-                <p>{consultation.diagnosis}</p>
+                <p>{consultation.diagnosis || '-'}</p>
               </Card>
-              <Card className="shadow-2" title="Recommandations">
-                <p>{consultation.recommendations}</p>
+              <Card className="shadow-2 mb-3" title="Recommandations">
+                <p>{consultation.recommendations || '-'}</p>
               </Card>
+              {consultation.notes && (
+                <Card className="shadow-2" title="Notes">
+                  <p>{consultation.notes}</p>
+                </Card>
+              )}
             </div>
           </div>
         </TabPanel>
@@ -130,28 +253,42 @@ const ConsultationDetail: React.FC = () => {
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-heart text-primary text-2xl mb-2"></i>
                   <div className="text-500 text-sm">Tension artérielle</div>
-                  <div className="font-bold text-lg">{consultation.bloodPressure}</div>
+                  <div className="font-bold text-lg">{consultation.bloodPressure || '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-chart-line text-primary text-2xl mb-2"></i>
                   <div className="text-500 text-sm">Poids</div>
-                  <div className="font-bold text-lg">{consultation.weight} kg</div>
+                  <div className="font-bold text-lg">{consultation.weight ? `${consultation.weight} kg` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-sun text-primary text-2xl mb-2"></i>
                   <div className="text-500 text-sm">Température</div>
-                  <div className="font-bold text-lg">{consultation.temperature}°C</div>
+                  <div className="font-bold text-lg">{consultation.temperature ? `${consultation.temperature}°C` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-clock text-primary text-2xl mb-2"></i>
                   <div className="text-500 text-sm">Fréquence cardiaque</div>
-                  <div className="font-bold text-lg">{consultation.heartRate} bpm</div>
+                  <div className="font-bold text-lg">{consultation.heartRate ? `${consultation.heartRate} bpm` : '-'}</div>
+                </div>
+              </div>
+              <div className="col-6 md:col-3 mt-3">
+                <div className="text-center p-3 surface-100 border-round">
+                  <i className="pi pi-wave-pulse text-primary text-2xl mb-2"></i>
+                  <div className="text-500 text-sm">Fréq. respiratoire</div>
+                  <div className="font-bold text-lg">{consultation.respiratoryRate ? `${consultation.respiratoryRate}/min` : '-'}</div>
+                </div>
+              </div>
+              <div className="col-6 md:col-3 mt-3">
+                <div className="text-center p-3 surface-100 border-round">
+                  <i className="pi pi-percentage text-primary text-2xl mb-2"></i>
+                  <div className="text-500 text-sm">Saturation O₂</div>
+                  <div className="font-bold text-lg">{consultation.oxygenSaturation ? `${consultation.oxygenSaturation}%` : '-'}</div>
                 </div>
               </div>
             </div>
@@ -160,13 +297,13 @@ const ConsultationDetail: React.FC = () => {
 
         <TabPanel header="Ordonnances" leftIcon="pi pi-file mr-2">
           <Card className="shadow-2">
-            <DataTable value={consultation.prescriptions} emptyMessage="Aucune ordonnance">
+            <DataTable value={consultation.prescriptions || []} emptyMessage="Aucune ordonnance">
               <Column field="medicationName" header="Médicament" />
               <Column field="dosage" header="Dosage" />
               <Column field="frequency" header="Fréquence" />
               <Column field="duration" header="Durée" />
               <Column field="instructions" header="Instructions" />
-              <Column 
+              <Column
                 body={() => (
                   <Button
                     icon="pi pi-print"
