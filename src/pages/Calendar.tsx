@@ -274,7 +274,7 @@ const Calendar: React.FC = () => {
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
         header={editingAppointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
-        className="w-full max-w-lg"
+        className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="flex flex-column gap-3">
