@@ -163,7 +163,7 @@ const InvoiceDetail: React.FC = () => {
         visible={paymentDialogVisible}
         onHide={() => setPaymentDialogVisible(false)}
         header="Ajouter un paiement"
-        className="w-full max-w-md"
+        className="w-11/12 md:w-6 lg:w-8"
         footer={
           <div className="flex justify-content-end gap-2">
             <Button

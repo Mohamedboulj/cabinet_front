@@ -198,7 +198,7 @@ const Users: React.FC = () => {
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
         header={editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
-        className="w-full max-w-lg"
+        className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="flex flex-column gap-3">

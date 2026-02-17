@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { useNavigate } from 'react-router-dom';
 import type { User, LoginCredentials, AuthState } from '../types';
 import { authService } from '../services/authService';
+import api from '../services/api';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const initAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           const user = await authService.getCurrentUser();
           setState({
@@ -51,10 +53,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await authService.login(credentials);
-      const { token, user } = response;
-      
+      const { token } = await authService.login(credentials);
       localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      const user = await authService.getCurrentUser();
       
       setState({
         user,
@@ -71,6 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
     setState({
       user: null,
       token: null,

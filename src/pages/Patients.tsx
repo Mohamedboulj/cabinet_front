@@ -246,7 +246,7 @@ const Patients: React.FC = () => {
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
         header={editingPatient ? 'Modifier le patient' : 'Nouveau patient'}
-        className="w-full max-w-4xl"
+        className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="grid">
