@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { consultationService } from '../services/consultationService';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import type { Consultation } from '../types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
@@ -105,7 +106,7 @@ const ConsultationDetail: React.FC = () => {
           toast.current?.show({
             severity: 'error',
             summary: 'Erreur',
-            detail: error.response?.data?.error || 'Impossible de supprimer la consultation',
+            detail: getApiErrorMessage(error, 'Impossible de supprimer la consultation'),
           });
         }
       },

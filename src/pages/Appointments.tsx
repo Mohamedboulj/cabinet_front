@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '../services/appointmentService';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import type { Appointment } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -56,7 +57,7 @@ const Appointments: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: 'Impossible d\'annuler le rendez-vous',
+        detail: getApiErrorMessage(error, 'Impossible d\'annuler le rendez-vous'),
       });
     }
   };
@@ -74,7 +75,7 @@ const Appointments: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: 'Impossible de confirmer le rendez-vous',
+        detail: getApiErrorMessage(error, 'Impossible de confirmer le rendez-vous'),
       });
     }
   };
@@ -92,7 +93,7 @@ const Appointments: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: 'Impossible de terminer le rendez-vous',
+        detail: getApiErrorMessage(error, 'Impossible de terminer le rendez-vous'),
       });
     }
   };

@@ -37,7 +37,6 @@ const Consultations: React.FC = () => {
     setLoading(true);
     try {
       const response = await consultationService.getConsultations();
-      console.log(response)
       setConsultations(response.data);
     } catch (error) {
       toast.current?.show({
@@ -366,7 +365,7 @@ const Consultations: React.FC = () => {
             <Dropdown
               value={formData.patient}
               options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
-              onChange={(e) => setFormData({ ...formData, patient: e.value })}
+              onChange={(e) => setFormData({ ...formData, patientId: e.value })}
               placeholder="Sélectionner un patient"
               className="w-full"
               filter

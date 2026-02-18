@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import type { User } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -115,7 +116,7 @@ const Users: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: error.response?.data?.message || 'Une erreur est survenue',
+        detail: getApiErrorMessage(error),
       });
     } finally {
       setSubmitting(false);
