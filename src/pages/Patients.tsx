@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patientService';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import type { Patient } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -101,7 +102,7 @@ const Patients: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: error.response?.data?.message || 'Une erreur est survenue',
+        detail: getApiErrorMessage(error),
       });
     } finally {
       setSubmitting(false);
@@ -130,7 +131,7 @@ const Patients: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: error.response?.data?.error || 'Impossible de supprimer le patient',
+        detail: getApiErrorMessage(error, 'Impossible de supprimer le patient'),
       });
     }
   };
