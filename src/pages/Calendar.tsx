@@ -7,6 +7,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { appointmentService } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
 import { userService } from '../services/userService';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import type { Appointment, Patient, User } from '../types';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -29,7 +30,7 @@ const Calendar: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<User[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  
+
   const [formData, setFormData] = useState<{
     patientId?: number;
     doctorId?: number;
@@ -149,7 +150,7 @@ const Calendar: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: error.response?.data?.error || 'Une erreur est survenue',
+        detail: getApiErrorMessage(error),
       });
     } finally {
       setLoading(false);
@@ -164,7 +165,7 @@ const Calendar: React.FC = () => {
             label="Supprimer"
             icon="pi pi-trash"
             className="p-button-danger"
-            onClick={() => {}}
+            onClick={() => { }}
           />
         )}
       </div>
