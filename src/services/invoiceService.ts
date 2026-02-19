@@ -53,4 +53,11 @@ export const invoiceService = {
         const response = await api.post(`/invoices/${invoiceId}/add-payment`, payment);
         return response.data;
     },
+
+    async printInvoice(id: number): Promise<Blob> {
+        const response = await api.get(`/invoices/${id}/print`, {
+            responseType: 'blob',
+        });
+        return response.data;
+    },
 };

@@ -1,6 +1,6 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { PanelMenu } from 'primereact/panelmenu';
-import { Badge } from 'primereact/badge';
+import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
 import type { User } from '../../types';
 
 interface SidebarProps {
@@ -9,21 +9,19 @@ interface SidebarProps {
   user: User | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
-  const location = useLocation();
-
+const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
   const getMenuItems = () => {
     const items = [
       {
         label: 'Tableau de bord',
         icon: 'pi pi-home',
-        command: () => {},
         template: (item: any, options: any) => (
           <NavLink 
             to="/dashboard" 
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -39,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -58,6 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
                 className={({ isActive }) => 
                   `p-menuitem-link ${isActive ? 'router-link-active' : ''}`
                 }
+                onClick={onHide}
               >
                 <span className={options.iconClassName}></span>
                 <span className={options.labelClassName}>{item.label}</span>
@@ -73,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
                 className={({ isActive }) => 
                   `p-menuitem-link ${isActive ? 'router-link-active' : ''}`
                 }
+                onClick={onHide}
               >
                 <span className={options.iconClassName}></span>
                 <span className={options.labelClassName}>{item.label}</span>
@@ -90,6 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -105,6 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -120,6 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -128,7 +132,6 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
       },
     ];
 
-    // Admin only items
     if (user?.roles.includes('ROLE_ADMIN')) {
       items.push({
         label: 'Utilisateurs',
@@ -139,6 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
             className={({ isActive }) => 
               `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
             }
+            onClick={onHide}
           >
             <span className={options.iconClassName}></span>
             <span className={options.labelClassName}>{item.label}</span>
@@ -156,6 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
           className={({ isActive }) => 
             `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
           }
+          onClick={onHide}
         >
           <span className={options.iconClassName}></span>
           <span className={options.labelClassName}>{item.label}</span>
@@ -166,14 +171,13 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
     return items;
   };
 
-  if (!visible) {
-    return null;
-  }
-
   return (
-    <aside 
-      className="mt-7 left-0 top-16 h-full w-64 surface-card border-right-1 surface-border overflow-y-auto"
-      style={{ zIndex: 100 }}
+    <PrimeSidebar 
+      visible={visible} 
+      onHide={onHide} 
+      position="left"
+      className="w-64"
+      showCloseIcon={true}
     >
       <div className="p-3">
         <PanelMenu 
@@ -182,7 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, user }) => {
           multiple
         />
       </div>
-    </aside>
+    </PrimeSidebar>
   );
 };
 
