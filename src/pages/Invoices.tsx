@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { invoiceService } from '../services/invoiceService';
 import { patientService } from '../services/patientService';
+import { consultationService } from '../services/consultationService';
 import { getApiErrorMessage } from '../utils/errorUtils';
-import type { Invoice, Patient } from '../types';
+import type { Invoice, Patient, Consultation } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -30,6 +31,7 @@ const Invoices: React.FC = () => {
   const toast = useRef<Toast>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -41,6 +43,7 @@ const Invoices: React.FC = () => {
   useEffect(() => {
     loadInvoices();
     loadPatients();
+    loadConsultations();
   }, []);
 
   const loadInvoices = async () => {
@@ -56,6 +59,15 @@ const Invoices: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadConsultations = async () => {
+    try {
+      const response = await consultationService.getConsultations();
+      setConsultations(response.data);
+    } catch (error) {
+      // Silent fail
     }
   };
 
@@ -103,7 +115,8 @@ const Invoices: React.FC = () => {
   const openEditDialog = (invoice: Invoice) => {
     setEditingInvoice(invoice);
     setFormData({
-      patient: invoice.patient?.id,
+      patientId: invoice.patient?.id,
+      consultationId: invoice.consultation?.id,
       invoiceDate: invoice.invoiceDate,
       dueDate: invoice.dueDate,
       notes: invoice.notes,
@@ -266,9 +279,32 @@ const Invoices: React.FC = () => {
         icon="pi pi-print"
         className="p-button-rounded p-button-secondary p-button-sm"
         tooltip="Imprimer"
+        onClick={() => handlePrint(rowData)}
       />
     </div>
   );
+
+  const handlePrint = async (invoice: Invoice) => {
+    try {
+      const blob = await invoiceService.printInvoice(invoice.id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      /* Optional: triggering direct download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `facture-${invoice.invoiceNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      */
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible d\'imprimer la facture',
+      });
+    }
+  };
 
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
@@ -325,8 +361,6 @@ const Invoices: React.FC = () => {
         paginator
         rows={10}
         rowsPerPageOptions={[10, 25, 50]}
-        stripedRows
-        showGridlines
         emptyMessage="Aucune facture trouvée"
         className="shadow-2"
       >
@@ -352,9 +386,9 @@ const Invoices: React.FC = () => {
           <div className="col-12 md:col-6 field">
             <label className="block font-medium mb-2">Patient *</label>
             <Dropdown
-              value={formData.patient}
+              value={formData.patientId}
               options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
-              onChange={(e) => setFormData({ ...formData, patient: e.value })}
+              onChange={(e) => setFormData({ ...formData, patientId: e.value })}
               placeholder="Sélectionner un patient"
               className="w-full"
               filter
@@ -363,8 +397,41 @@ const Invoices: React.FC = () => {
             />
           </div>
 
-          {/* Status */}
+          {/* Consultation */}
           <div className="col-12 md:col-6 field">
+            <label className="block font-medium mb-2">Consultation</label>
+            <Dropdown
+              value={formData.consultationId}
+              options={consultations}
+              optionLabel="reason"
+              optionValue="id"
+              onChange={(e) => setFormData({ ...formData, consultationId: e.value })}
+              placeholder="Sélectionner une consultation"
+              className="w-full"
+              filter
+              filterPlaceholder="Rechercher..."
+              showClear
+              itemTemplate={(option: Consultation) => {
+                const patient = option.patient;
+                const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
+                const date = new Date(option.createdAt).toLocaleDateString('fr-FR');
+                return <span>{option.referenceNumber} — {patientName} — {option.reason || 'Sans motif'} ({date})</span>;
+              }}
+              valueTemplate={(value: any) => {
+                if (!value) return <span>Sélectionner une consultation</span>;
+                const consultation = typeof value === 'object'
+                  ? value as Consultation
+                  : consultations.find((c: Consultation) => c.id === value);
+                if (!consultation) return <span>Consultation #{value}</span>;
+                const patient = consultation.patient;
+                const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
+                return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || 'Sans motif'}</span>;
+              }}
+            />
+          </div>
+
+          {/* Status */}
+          <div className="col-12 md:col-4 field">
             <label className="block font-medium mb-2">Statut</label>
             <Dropdown
               value={formData.status}
@@ -383,7 +450,7 @@ const Invoices: React.FC = () => {
           </div>
 
           {/* Invoice Date */}
-          <div className="col-12 md:col-6 field">
+          <div className="col-12 md:col-4 field">
             <label className="block font-medium mb-2">Date de facture *</label>
             <Calendar
               value={formData.invoiceDate ? new Date(formData.invoiceDate) : null}
@@ -395,7 +462,7 @@ const Invoices: React.FC = () => {
           </div>
 
           {/* Due Date */}
-          <div className="col-12 md:col-6 field">
+          <div className="col-12 md:col-4 field">
             <label className="block font-medium mb-2">Date d'échéance</label>
             <Calendar
               value={formData.dueDate ? new Date(formData.dueDate) : null}

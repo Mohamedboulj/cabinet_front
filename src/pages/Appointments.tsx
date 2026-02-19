@@ -185,8 +185,6 @@ const Appointments: React.FC = () => {
         paginator
         rows={10}
         rowsPerPageOptions={[10, 25, 50]}
-        stripedRows
-        showGridlines
         emptyMessage="Aucun rendez-vous trouvé"
         className="shadow-2"
       >
