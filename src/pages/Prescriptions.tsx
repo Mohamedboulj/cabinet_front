@@ -245,7 +245,7 @@ const Prescriptions: React.FC = () => {
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
     const date = new Date(option.createdAt).toLocaleDateString('fr-FR');
     return (
-      <span>{patientName} — {option.reason || 'Sans motif'} ({date})</span>
+      <span>{option.referenceNumber } — {patientName} — {option.reason || 'Sans motif'} ({date})</span>
     );
   };
 
@@ -258,7 +258,7 @@ const Prescriptions: React.FC = () => {
     if (!consultation) return <span>Consultation #{value}</span>;
     const patient = consultation.patient;
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
-    return <span>{patientName} — {consultation.reason || 'Sans motif'}</span>;
+    return <span>{consultation.referenceNumber } — {patientName} — {consultation.reason || 'Sans motif'}</span>;
   };
 
   const dialogFooter = (

@@ -391,6 +391,7 @@ const InvoiceDetail: React.FC = () => {
               onChange={(e) => setPaymentData({ ...paymentData, paymentDate: e.value?.toISOString().split('T')[0] })}
               dateFormat="dd/mm/yy"
               className="w-full"
+              minDate={new Date()}
               showIcon
             />
           </div>

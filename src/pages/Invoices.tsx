@@ -457,6 +457,7 @@ const Invoices: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, invoiceDate: e.value?.toISOString().split('T')[0] })}
               dateFormat="dd/mm/yy"
               className="w-full"
+              minDate={new Date()}
               showIcon
             />
           </div>
@@ -469,6 +470,7 @@ const Invoices: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, dueDate: e.value?.toISOString().split('T')[0] })}
               dateFormat="dd/mm/yy"
               className="w-full"
+              minDate={new Date()}
               showIcon
             />
           </div>

@@ -267,6 +267,9 @@ const Calendar: React.FC = () => {
           slotMinTime="08:00:00"
           slotMaxTime="20:00:00"
           slotDuration="00:30:00"
+          validRange={{
+            start: new Date().toISOString().split('T')[0] // Sets min date to today
+          }}
         />
       </div>
 
@@ -279,35 +282,37 @@ const Calendar: React.FC = () => {
         footer={dialogFooter}
       >
         <div className="flex flex-column gap-3">
-          <div className="field">
-            <label className="block font-medium mb-2">Patient *</label>
-            <AutoComplete
-              value={selectedPatient}
-              suggestions={patients}
-              completeMethod={searchPatients}
-              field="fullName"
-              onChange={(e) => {
-                setSelectedPatient(e.value);
-                setFormData({ ...formData, patientId: e.value?.id });
-              }}
-              placeholder="Rechercher un patient..."
-              className="w-full"
-            />
-          </div>
+          <div className="grid">
+            <div className="field col-12 md:col-6 field">
+              <label className="block font-medium mb-2">Patient *</label>
+              <AutoComplete
+                  value={selectedPatient}
+                  suggestions={patients}
+                  completeMethod={searchPatients}
+                  field="fullName"
+                  onChange={(e) => {
+                    setSelectedPatient(e.value);
+                    setFormData({ ...formData, patientId: e.value?.id });
+                  }}
+                  placeholder="Rechercher un patient..."
+                  className="w-full"
+                  inputClassName="w-full"
+              />
+            </div>
 
-          <div className="field">
-            <label className="block font-medium mb-2">Médecin *</label>
-            <Dropdown
-              value={formData.doctorId}
-              options={doctors}
-              optionLabel="fullName"
-              optionValue="id"
-              onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
-              placeholder="Sélectionner un médecin"
-              className="w-full"
-            />
+            <div className="field col-12 md:col-6 field">
+              <label className="block font-medium mb-2">Médecin *</label>
+              <Dropdown
+                  value={formData.doctorId}
+                  options={doctors}
+                  optionLabel="fullName"
+                  optionValue="id"
+                  onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
+                  placeholder="Sélectionner un médecin"
+                  className="w-full"
+              />
+            </div>
           </div>
-
           <div className="grid">
             <div className="col-6 field">
               <label className="block font-medium mb-2">Début *</label>
@@ -318,6 +323,7 @@ const Calendar: React.FC = () => {
                 hourFormat="24"
                 className="w-full"
                 placeholder="Date et heure"
+                minDate={new Date()}
               />
             </div>
             <div className="col-6 field">
@@ -329,6 +335,7 @@ const Calendar: React.FC = () => {
                 hourFormat="24"
                 className="w-full"
                 placeholder="Date et heure"
+                minDate={new Date()}
               />
             </div>
           </div>
