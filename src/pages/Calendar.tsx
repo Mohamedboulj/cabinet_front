@@ -72,7 +72,7 @@ const Calendar: React.FC = () => {
     try {
       const response = await userService.getUsers();
       const doctorUsers = response.data
-        .filter(user => user.roles.includes('ROLE_MEDECIN'))
+        .filter(user => user.roles.includes('ROLE_MEDECIN') && user.isActive === true)
         .map(user => ({ ...user, fullName: `${user.firstName} ${user.lastName}` }));
       setDoctors(doctorUsers);
     } catch (error) {
