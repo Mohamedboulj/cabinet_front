@@ -6,7 +6,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import PatientDetailSkeleton from '../components/skeletons/PatientDetailSkeleton';
 import { Tag } from 'primereact/tag';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -49,11 +49,7 @@ const PatientDetail: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-content-center align-items-center h-20rem">
-        <ProgressSpinner />
-      </div>
-    );
+    return <PatientDetailSkeleton />;
   }
 
   if (!patient) {
@@ -61,9 +57,9 @@ const PatientDetail: React.FC = () => {
       <div className="text-center py-8">
         <i className="pi pi-exclamation-circle text-6xl text-500 mb-4"></i>
         <h2 className="text-2xl font-semibold">Patient non trouvé</h2>
-        <Button 
-          label="Retour à la liste" 
-          icon="pi pi-arrow-left" 
+        <Button
+          label="Retour à la liste"
+          icon="pi pi-arrow-left"
           className="mt-4"
           onClick={() => navigate('/patients')}
         />
@@ -87,7 +83,7 @@ const PatientDetail: React.FC = () => {
           <h1 className="text-3xl font-bold m-0">{patient.fullName}</h1>
           <div className="flex gap-2 mt-2">
             {patient.gender && (
-              <Tag 
+              <Tag
                 icon={patient.gender === 'M' ? 'pi pi-male' : 'pi pi-female'}
                 value={patient.gender === 'M' ? 'Homme' : 'Femme'}
                 className={patient.gender === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}
@@ -162,7 +158,7 @@ const PatientDetail: React.FC = () => {
               <div>
                 <div className="text-500 text-sm">Âge / Date de naissance</div>
                 <div className="font-medium">
-                  {patient.age ? `${patient.age} ans` : '-'} 
+                  {patient.age ? `${patient.age} ans` : '-'}
                   {patient.birthDate && ` (${new Date(patient.birthDate).toLocaleDateString('fr-FR')})`}
                 </div>
               </div>
@@ -234,24 +230,24 @@ const PatientDetail: React.FC = () => {
               rows={5}
               emptyMessage="Aucune consultation"
             >
-              <Column 
-                field="createdAt" 
-                header="Date" 
+              <Column
+                field="createdAt"
+                header="Date"
                 body={(row) => new Date(row.createdAt).toLocaleDateString('fr-FR')}
               />
               <Column field="reason" header="Motif" />
               <Column field="diagnosis" header="Diagnostic" />
-              <Column 
-                field="status" 
+              <Column
+                field="status"
                 header="Statut"
                 body={(row) => (
-                  <Tag 
+                  <Tag
                     value={row.status === 'COMPLETED' ? 'Terminée' : 'En cours'}
                     severity={row.status === 'COMPLETED' ? 'success' : 'warning'}
                   />
                 )}
               />
-              <Column 
+              <Column
                 body={(row) => (
                   <Button
                     icon="pi pi-eye"
@@ -272,14 +268,14 @@ const PatientDetail: React.FC = () => {
               rows={5}
               emptyMessage="Aucun rendez-vous"
             >
-              <Column 
-                field="startAt" 
-                header="Date" 
+              <Column
+                field="startAt"
+                header="Date"
                 body={(row) => new Date(row.startAt).toLocaleString('fr-FR')}
               />
               <Column field="reason" header="Motif" />
-              <Column 
-                field="status" 
+              <Column
+                field="status"
                 header="Statut"
                 body={(row) => {
                   const statusMap: Record<string, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' }> = {

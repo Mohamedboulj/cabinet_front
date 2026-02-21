@@ -9,6 +9,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 
 const Appointments: React.FC = () => {
   const navigate = useNavigate();
@@ -179,24 +180,27 @@ const Appointments: React.FC = () => {
         </div>
       </div>
 
-      <DataTable
-        value={appointments}
-        loading={loading}
-        paginator
-        rows={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        emptyMessage="Aucun rendez-vous trouvé"
-        className="shadow-2"
-      >
-        <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-        <Column field="patient.fullName" header="Patient" sortable />
-        <Column field="doctor.fullName" header="Médecin" sortable />
-        <Column field="startAt" header="Date" body={dateBodyTemplate} sortable />
-        <Column field="reason" header="Motif" />
-        <Column field="type" header="Type" sortable />
-        <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-        <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
-      </DataTable>
+      {loading ? (
+        <DataTableSkeleton headers={['ID', 'Patient', 'Médecin', 'Date', 'Motif', 'Type', 'Statut', 'Actions']} />
+      ) : (
+        <DataTable
+          value={appointments}
+          paginator
+          rows={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          emptyMessage="Aucun rendez-vous trouvé"
+          className="shadow-2"
+        >
+          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
+          <Column field="patient.fullName" header="Patient" sortable />
+          <Column field="doctor.fullName" header="Médecin" sortable />
+          <Column field="startAt" header="Date" body={dateBodyTemplate} sortable />
+          <Column field="reason" header="Motif" />
+          <Column field="type" header="Type" sortable />
+          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+        </DataTable>
+      )}
     </div>
   );
 };

@@ -12,7 +12,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import InvoiceDetailSkeleton from '../components/skeletons/InvoiceDetailSkeleton';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -163,11 +163,7 @@ const InvoiceDetail: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <ProgressSpinner />
-      </div>
-    );
+    return <InvoiceDetailSkeleton />;
   }
 
   if (!invoice) {
@@ -392,6 +388,7 @@ const InvoiceDetail: React.FC = () => {
               onChange={(e) => setPaymentData({ ...paymentData, paymentDate: e.value?.toISOString().split('T')[0] })}
               dateFormat="dd/mm/yy"
               className="w-full"
+              minDate={new Date()}
               showIcon
             />
           </div>

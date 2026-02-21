@@ -14,6 +14,7 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 import { Dropdown } from 'primereact/dropdown';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Checkbox } from 'primereact/checkbox';
@@ -245,7 +246,7 @@ const Prescriptions: React.FC = () => {
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
     const date = new Date(option.createdAt).toLocaleDateString('fr-FR');
     return (
-      <span>{patientName} — {option.reason || 'Sans motif'} ({date})</span>
+      <span>{option.referenceNumber} — {patientName} — {option.reason || 'Sans motif'} ({date})</span>
     );
   };
 
@@ -258,7 +259,7 @@ const Prescriptions: React.FC = () => {
     if (!consultation) return <span>Consultation #{value}</span>;
     const patient = consultation.patient;
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
-    return <span>{patientName} — {consultation.reason || 'Sans motif'}</span>;
+    return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || 'Sans motif'}</span>;
   };
 
   const dialogFooter = (
@@ -310,25 +311,28 @@ const Prescriptions: React.FC = () => {
       </div>
 
       {/* Table */}
-      <DataTable
-        value={prescriptions}
-        loading={loading}
-        paginator
-        rows={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        emptyMessage="Aucune ordonnance trouvée"
-        className="shadow-2"
-      >
-        <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-        <Column header="Patient" body={patientBodyTemplate} sortable />
-        <Column field="medicationName" header="Médicament" sortable />
-        <Column field="dosage" header="Dosage" />
-        <Column field="frequency" header="Fréquence" />
-        <Column field="duration" header="Durée" />
-        <Column header="Renouvelable" body={renewableBodyTemplate} style={{ width: '10rem' }} />
-        <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
-        <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
-      </DataTable>
+      {loading ? (
+        <DataTableSkeleton headers={['ID', 'Patient', 'Médicament', 'Dosage', 'Fréquence', 'Durée', 'Renouvelable', 'Date', 'Actions']} />
+      ) : (
+        <DataTable
+          value={prescriptions}
+          paginator
+          rows={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          emptyMessage="Aucune ordonnance trouvée"
+          className="shadow-2"
+        >
+          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
+          <Column header="Patient" body={patientBodyTemplate} sortable />
+          <Column field="medicationName" header="Médicament" sortable />
+          <Column field="dosage" header="Dosage" />
+          <Column field="frequency" header="Fréquence" />
+          <Column field="duration" header="Durée" />
+          <Column header="Renouvelable" body={renewableBodyTemplate} style={{ width: '10rem' }} />
+          <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+        </DataTable>
+      )}
 
       {/* Create/Edit Dialog */}
       <Dialog

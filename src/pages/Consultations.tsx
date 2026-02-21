@@ -11,6 +11,7 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
@@ -273,11 +274,11 @@ const Consultations: React.FC = () => {
       </div>
     );
   };
-  const patientFullName = (rowData:any) =>
-      `${rowData.patient.lastName} ${rowData.patient.firstName}`;
+  const patientFullName = (rowData: any) =>
+    `${rowData.patient.lastName} ${rowData.patient.firstName}`;
 
-  const doctorFullName = (rowData:any) =>
-      `${rowData.doctor.lastName} ${rowData.doctor.firstName}`;
+  const doctorFullName = (rowData: any) =>
+    `${rowData.doctor.lastName} ${rowData.doctor.firstName}`;
 
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
@@ -328,25 +329,28 @@ const Consultations: React.FC = () => {
       </div>
 
       {/* Consultations Table */}
-      <DataTable
-        value={consultations}
-        loading={loading}
-        paginator
-        rows={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        emptyMessage="Aucune consultation trouvée"
-        className="shadow-2"
-      >
-        <Column field="referenceNumber" header="Consultation N°" sortable />
-        <Column field="patient.lastName" header="Patient" body={patientFullName}  sortable />
-        <Column field="doctor.lastName" header="Médecin" body={doctorFullName}  sortable />
-        <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
-        <Column field="reason" header="Motif" />
-        <Column field="diagnosis" header="Diagnostic" />
-        <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-        <Column field="isPaid" header="Paiement" body={paymentBodyTemplate} sortable />
-        <Column body={actionBodyTemplate} header="Actions" style={{ width: '14rem' }} />
-      </DataTable>
+      {loading ? (
+        <DataTableSkeleton headers={['Consultation N°', 'Patient', 'Médecin', 'Date', 'Motif', 'Diagnostic', 'Statut', 'Paiement', 'Actions']} />
+      ) : (
+        <DataTable
+          value={consultations}
+          paginator
+          rows={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          emptyMessage="Aucune consultation trouvée"
+          className="shadow-2"
+        >
+          <Column field="referenceNumber" header="Consultation N°" sortable />
+          <Column field="patient.lastName" header="Patient" body={patientFullName} sortable />
+          <Column field="doctor.lastName" header="Médecin" body={doctorFullName} sortable />
+          <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
+          <Column field="reason" header="Motif" />
+          <Column field="diagnosis" header="Diagnostic" />
+          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
+          <Column field="isPaid" header="Paiement" body={paymentBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header="Actions" style={{ width: '14rem' }} />
+        </DataTable>
+      )}
 
       {/* Consultation Dialog */}
       <Dialog
