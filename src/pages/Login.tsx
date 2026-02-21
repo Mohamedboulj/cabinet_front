@@ -77,7 +77,7 @@ const Login: React.FC = () => {
               )}
             </div>
 
-            <div className="field">
+            <div className="field p-fluid">
               <label htmlFor="password" className="block text-900 font-medium mb-2">
                 Mot de passe
               </label>

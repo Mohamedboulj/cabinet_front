@@ -13,7 +13,7 @@ import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 
 const Patients: React.FC = () => {
   const navigate = useNavigate();
@@ -221,24 +221,27 @@ const Patients: React.FC = () => {
       </div>
 
       {/* Patients Table */}
-      <DataTable
-        value={patients}
-        loading={loading}
-        paginator
-        rows={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        emptyMessage="Aucun patient trouvé"
-        className="shadow-2"
-      >
-        <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-        <Column field="lastName" header="Nom" sortable />
-        <Column field="firstName" header="Prénom" sortable />
-        <Column field="cin" header="CIN" sortable />
-        <Column field="phone" header="Téléphone" />
-        <Column field="age" header="Âge" body={ageBodyTemplate} sortable />
-        <Column field="gender" header="Sexe" body={genderBodyTemplate} sortable />
-        <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
-      </DataTable>
+      {loading ? (
+        <DataTableSkeleton headers={['ID', 'Nom', 'Prénom', 'CIN', 'Téléphone', 'Âge', 'Sexe', 'Actions']} />
+      ) : (
+        <DataTable
+          value={patients}
+          paginator
+          rows={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          emptyMessage="Aucun patient trouvé"
+          className="shadow-2"
+        >
+          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
+          <Column field="lastName" header="Nom" sortable />
+          <Column field="firstName" header="Prénom" sortable />
+          <Column field="cin" header="CIN" sortable />
+          <Column field="phone" header="Téléphone" />
+          <Column field="age" header="Âge" body={ageBodyTemplate} sortable />
+          <Column field="gender" header="Sexe" body={genderBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+        </DataTable>
+      )}
 
       {/* Patient Dialog */}
       <Dialog

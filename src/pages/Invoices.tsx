@@ -13,6 +13,7 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { InputNumber } from 'primereact/inputnumber';
@@ -355,23 +356,26 @@ const Invoices: React.FC = () => {
       </div>
 
       {/* Invoices Table */}
-      <DataTable
-        value={invoices}
-        loading={loading}
-        paginator
-        rows={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        emptyMessage="Aucune facture trouvée"
-        className="shadow-2"
-      >
-        <Column field="invoiceNumber" header="N° Facture" sortable />
-        <Column field="patient.fullName" header="Patient" sortable body={patientFullName} />
-        <Column field="invoiceDate" header="Date" body={dateBodyTemplate} sortable />
-        <Column field="totalAmount" header="Montant" body={amountBodyTemplate} sortable />
-        <Column field="balance" header="Solde" body={balanceBodyTemplate} />
-        <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-        <Column body={actionBodyTemplate} header="Actions" style={{ width: '12rem' }} />
-      </DataTable>
+      {loading ? (
+        <DataTableSkeleton headers={['N° Facture', 'Patient', 'Date', 'Montant', 'Solde', 'Statut', 'Actions']} />
+      ) : (
+        <DataTable
+          value={invoices}
+          paginator
+          rows={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          emptyMessage="Aucune facture trouvée"
+          className="shadow-2"
+        >
+          <Column field="invoiceNumber" header="N° Facture" sortable />
+          <Column field="patient.fullName" header="Patient" sortable body={patientFullName} />
+          <Column field="invoiceDate" header="Date" body={dateBodyTemplate} sortable />
+          <Column field="totalAmount" header="Montant" body={amountBodyTemplate} sortable />
+          <Column field="balance" header="Solde" body={balanceBodyTemplate} />
+          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header="Actions" style={{ width: '12rem' }} />
+        </DataTable>
+      )}
 
       {/* Invoice Dialog */}
       <Dialog
@@ -383,22 +387,22 @@ const Invoices: React.FC = () => {
       >
         <div className="grid">
           {/* Patient */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Patient *</label>
-            <Dropdown
-              value={formData.patientId}
-              options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
-              onChange={(e) => setFormData({ ...formData, patientId: e.value })}
-              placeholder="Sélectionner un patient"
-              className="w-full"
-              filter
-              filterPlaceholder="Rechercher..."
-              disabled={!!editingInvoice}
-            />
-          </div>
+          {/*<div className="col-12 md:col-6 field">*/}
+          {/*  <label className="block font-medium mb-2">Patient *</label>*/}
+          {/*  <Dropdown*/}
+          {/*    value={formData.patientId}*/}
+          {/*    options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}*/}
+          {/*    onChange={(e) => setFormData({ ...formData, patientId: e.value })}*/}
+          {/*    placeholder="Sélectionner un patient"*/}
+          {/*    className="w-full"*/}
+          {/*    filter*/}
+          {/*    filterPlaceholder="Rechercher..."*/}
+          {/*    disabled={!!editingInvoice}*/}
+          {/*  />*/}
+          {/*</div>*/}
 
           {/* Consultation */}
-          <div className="col-12 md:col-6 field">
+          <div className="col-12 md:col-8 field">
             <label className="block font-medium mb-2">Consultation</label>
             <Dropdown
               value={formData.consultationId}
@@ -476,7 +480,7 @@ const Invoices: React.FC = () => {
           </div>
 
           {/* Discount */}
-          <div className="col-12 md:col-6 field">
+          <div className="col-12 md:col-4 field">
             <label className="block font-medium mb-2">Remise (MAD)</label>
             <InputText
               value={formData.discountAmount || '0'}
@@ -487,13 +491,13 @@ const Invoices: React.FC = () => {
           </div>
 
           {/* Notes */}
-          <div className="col-12 md:col-6 field">
+          <div className="col-12 md:col-12 field">
             <label className="block font-medium mb-2">Notes</label>
             <InputTextarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full"
-              rows={2}
+              rows={3}
               autoResize
             />
           </div>

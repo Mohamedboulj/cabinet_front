@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { dashboardService } from '../services/dashboardService';
 import type { DashboardStats } from '../types';
 import { Card } from 'primereact/card';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
+import ListItemSkeleton from '../components/skeletons/ListItemSkeleton';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,11 +28,7 @@ const Dashboard: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-content-center align-items-center h-20rem">
-        <ProgressSpinner />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const StatCard: React.FC<{
@@ -49,7 +46,7 @@ const Dashboard: React.FC = () => {
           <h3 className="text-3xl font-bold text-900 m-0">{value}</h3>
           {subtitle && <p className="text-500 text-sm mt-1">{subtitle}</p>}
         </div>
-        <div 
+        <div
           className="flex justify-content-center align-items-center border-circle"
           style={{ width: '3rem', height: '3rem', backgroundColor: color }}
         >
@@ -63,9 +60,9 @@ const Dashboard: React.FC = () => {
     <div>
       <div className="flex justify-content-between align-items-center mb-4">
         <h1 className="text-3xl font-bold m-0">Tableau de bord</h1>
-        <Button 
-          icon="pi pi-refresh" 
-          className="p-button-text" 
+        <Button
+          icon="pi pi-refresh"
+          className="p-button-text"
           onClick={loadStats}
           tooltip="Actualiser"
         />
@@ -126,27 +123,27 @@ const Dashboard: React.FC = () => {
       <div className="mt-5">
         <h2 className="text-xl font-semibold mb-3">Actions rapides</h2>
         <div className="flex flex-wrap gap-2">
-          <Button 
-            label="Nouveau patient" 
-            icon="pi pi-user-plus" 
+          <Button
+            label="Nouveau patient"
+            icon="pi pi-user-plus"
             className="p-button-success"
             onClick={() => navigate('/patients', { state: { openNew: true } })}
           />
-          <Button 
-            label="Nouveau rendez-vous" 
-            icon="pi pi-calendar-plus" 
+          <Button
+            label="Nouveau rendez-vous"
+            icon="pi pi-calendar-plus"
             className="p-button-info"
             onClick={() => navigate('/calendar', { state: { openNew: true } })}
           />
-          <Button 
-            label="Nouvelle consultation" 
-            icon="pi pi-file-edit" 
+          <Button
+            label="Nouvelle consultation"
+            icon="pi pi-file-edit"
             className="p-button-warning"
             onClick={() => navigate('/consultations', { state: { openNew: true } })}
           />
-          <Button 
-            label="Nouvelle facture" 
-            icon="pi pi-file-o" 
+          <Button
+            label="Nouvelle facture"
+            icon="pi pi-file-o"
             className="p-button-help"
             onClick={() => navigate('/invoices', { state: { openNew: true } })}
           />
@@ -191,7 +188,7 @@ const UpcomingAppointments: React.FC = () => {
   };
 
   if (loading) {
-    return <ProgressSpinner style={{ width: '30px', height: '30px' }} />;
+    return <ListItemSkeleton count={3} />;
   }
 
   if (appointments.length === 0) {
@@ -201,8 +198,8 @@ const UpcomingAppointments: React.FC = () => {
   return (
     <div className="flex flex-column gap-2">
       {appointments.map((apt) => (
-        <div 
-          key={apt.id} 
+        <div
+          key={apt.id}
           className="flex justify-content-between align-items-center p-2 surface-hover border-round cursor-pointer hover:surface-200 transition-colors"
           onClick={() => navigate(`/appointments`)}
         >
@@ -219,9 +216,8 @@ const UpcomingAppointments: React.FC = () => {
             </div>
           </div>
           <div className="flex align-items-center gap-2">
-            <span className={`px-2 py-1 text-xs border-round ${
-              apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-            }`}>
+            <span className={`px-2 py-1 text-xs border-round ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+              }`}>
               {apt.status === 'CONFIRMED' ? 'Confirmé' : 'Planifié'}
             </span>
             <i className="pi pi-chevron-right text-400"></i>
@@ -253,7 +249,7 @@ const UnpaidInvoices: React.FC = () => {
   };
 
   if (loading) {
-    return <ProgressSpinner style={{ width: '30px', height: '30px' }} />;
+    return <ListItemSkeleton count={3} />;
   }
 
   if (invoices.length === 0) {
@@ -263,13 +259,13 @@ const UnpaidInvoices: React.FC = () => {
   return (
     <div className="flex flex-column gap-2">
       {invoices.map((inv) => (
-        <div 
-          key={inv.id} 
+        <div
+          key={inv.id}
           className="flex justify-content-between align-items-center p-2 surface-hover border-round cursor-pointer hover:surface-200 transition-colors"
           onClick={() => navigate(`/invoices/${inv.id}`)}
         >
           <div>
-            <div className="font-medium">{inv.patient.lastName+' '+inv.patient.firstName}</div>
+            <div className="font-medium">{inv.patient.lastName + ' ' + inv.patient.firstName}</div>
             <div className="text-sm text-500">{inv.invoiceNumber}</div>
           </div>
           <div className="flex align-items-center gap-2">

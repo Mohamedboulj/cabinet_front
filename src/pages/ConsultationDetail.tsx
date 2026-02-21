@@ -10,7 +10,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import ConsultationDetailSkeleton from '../components/skeletons/ConsultationDetailSkeleton';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const ConsultationDetail: React.FC = () => {
@@ -124,11 +124,7 @@ const ConsultationDetail: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <ProgressSpinner />
-      </div>
-    );
+    return <ConsultationDetailSkeleton />;
   }
 
   if (!consultation) {
