@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
 const MainLayout: React.FC = () => {
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const { user } = useAuth();
 
   return (
@@ -15,24 +15,20 @@ const MainLayout: React.FC = () => {
         user={user}
       />
       
-      <div className="flex">
-        <Sidebar 
-          visible={sidebarVisible} 
-          onHide={() => setSidebarVisible(false)}
-          user={user}
-        />
-        
-        <main 
-          className={`flex-1 transition-all duration-300 ${
-            sidebarVisible ? 'ml-64' : 'ml-0'
-          }`}
-          style={{ marginTop: '4rem' }}
-        >
-          <div className="p-4">
-            <Outlet />
-          </div>
-        </main>
-      </div>
+      <Sidebar 
+        visible={sidebarVisible} 
+        onHide={() => setSidebarVisible(false)}
+        user={user}
+      />
+      
+      <main 
+        className="flex-1 transition-all duration-300"
+        style={{ marginTop: '4rem', paddingLeft: '1rem' }}
+      >
+        <div className="p-4">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 };

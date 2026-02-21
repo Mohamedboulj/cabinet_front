@@ -334,12 +334,10 @@ const Consultations: React.FC = () => {
         paginator
         rows={10}
         rowsPerPageOptions={[10, 25, 50]}
-        stripedRows
-        showGridlines
         emptyMessage="Aucune consultation trouvée"
         className="shadow-2"
       >
-        <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
+        <Column field="referenceNumber" header="Consultation N°" sortable />
         <Column field="patient.lastName" header="Patient" body={patientFullName}  sortable />
         <Column field="doctor.lastName" header="Médecin" body={doctorFullName}  sortable />
         <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
@@ -363,7 +361,7 @@ const Consultations: React.FC = () => {
           <div className="col-12 md:col-6 field">
             <label className="block font-medium mb-2">Patient *</label>
             <Dropdown
-              value={formData.patient}
+              value={formData.patientId}
               options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
               onChange={(e) => setFormData({ ...formData, patientId: e.value })}
               placeholder="Sélectionner un patient"

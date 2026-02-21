@@ -56,6 +56,7 @@ export interface Appointment {
 
 export interface Consultation {
   id: number;
+  referenceNumber: string
   patient: Patient;
   doctor: User;
   appointment?: Appointment;

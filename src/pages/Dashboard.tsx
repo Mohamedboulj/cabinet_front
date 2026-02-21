@@ -269,12 +269,12 @@ const UnpaidInvoices: React.FC = () => {
           onClick={() => navigate(`/invoices/${inv.id}`)}
         >
           <div>
-            <div className="font-medium">{inv.patient.fullName}</div>
+            <div className="font-medium">{inv.patient.lastName+' '+inv.patient.firstName}</div>
             <div className="text-sm text-500">{inv.invoiceNumber}</div>
           </div>
           <div className="flex align-items-center gap-2">
             <span className="font-semibold text-red-500">
-              {parseFloat(inv.balance).toLocaleString()} €
+              {parseFloat(inv.totalAmount).toLocaleString()} €
             </span>
             <i className="pi pi-chevron-right text-400"></i>
           </div>

@@ -161,8 +161,6 @@ const Users: React.FC = () => {
         paginator
         rows={10}
         rowsPerPageOptions={[10, 25, 50]}
-        stripedRows
-        showGridlines
         emptyMessage="Aucun utilisateur trouvé"
         className="shadow-2"
       >
