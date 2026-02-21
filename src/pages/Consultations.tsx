@@ -37,7 +37,6 @@ const Consultations: React.FC = () => {
     setLoading(true);
     try {
       const response = await consultationService.getConsultations();
-      console.log(response)
       setConsultations(response.data);
     } catch (error) {
       toast.current?.show({

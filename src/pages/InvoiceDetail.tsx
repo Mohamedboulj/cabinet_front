@@ -228,6 +228,7 @@ const InvoiceDetail: React.FC = () => {
             label="Imprimer"
             icon="pi pi-print"
             className="p-button-secondary"
+            onClick={() => window.print()}
           />
         </div>
       </div>

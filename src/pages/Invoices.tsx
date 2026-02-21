@@ -279,7 +279,7 @@ const Invoices: React.FC = () => {
         icon="pi pi-print"
         className="p-button-rounded p-button-secondary p-button-sm"
         tooltip="Imprimer"
-        onClick={() => handlePrint(rowData)}
+        onClick={() => window.open(`/invoices/${rowData.id}`, '_blank')}
       />
     </div>
   );
