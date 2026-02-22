@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -18,6 +18,14 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Toast } from 'primereact/toast';
 import { AutoComplete } from 'primereact/autocomplete';
 
+const STATUS_CONFIG: { key: string; label: string; color: string }[] = [
+  { key: 'SCHEDULED', label: 'Planifié', color: '#3498db' },
+  { key: 'CONFIRMED', label: 'Confirmé', color: '#2ecc71' },
+  { key: 'IN_PROGRESS', label: 'En cours', color: '#f39c12' },
+  { key: 'COMPLETED', label: 'Terminé', color: '#27ae60' },
+  { key: 'CANCELLED', label: 'Annulé', color: '#e74c3c' },
+];
+
 const Calendar: React.FC = () => {
   const navigate = useNavigate();
   const toast = useRef<Toast>(null);
@@ -30,6 +38,9 @@ const Calendar: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<User[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(
+    new Set(STATUS_CONFIG.map(s => s.key))
+  );
 
   const [formData, setFormData] = useState<{
     patientId?: number;
@@ -41,17 +52,36 @@ const Calendar: React.FC = () => {
     type?: string;
   }>({});
 
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      const status = event.extendedProps?.status || event.status;
+      if (!status) return true;
+      return activeFilters.has(status);
+    });
+  }, [events, activeFilters]);
+
+  const toggleFilter = (statusKey: string) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(statusKey)) {
+        next.delete(statusKey);
+      } else {
+        next.add(statusKey);
+      }
+      return next;
+    });
+  };
+
+  const lastDateRange = useRef<string>('');
+
   useEffect(() => {
-    loadEvents();
     loadDoctors();
   }, []);
 
-  const loadEvents = async () => {
-    const calendarApi = calendarRef.current?.getApi();
-    if (!calendarApi) return;
-
-    const start = calendarApi.view.activeStart;
-    const end = calendarApi.view.activeEnd;
+  const loadEvents = useCallback(async (start: Date, end: Date) => {
+    const rangeKey = `${start.toISOString()}_${end.toISOString()}`;
+    if (lastDateRange.current === rangeKey) return;
+    lastDateRange.current = rangeKey;
 
     try {
       const data = await appointmentService.getCalendarEvents({
@@ -66,11 +96,23 @@ const Calendar: React.FC = () => {
         detail: 'Impossible de charger les rendez-vous',
       });
     }
-  };
+  }, []);
+
+  const handleDatesSet = useCallback((dateInfo: any) => {
+    loadEvents(dateInfo.start, dateInfo.end);
+  }, [loadEvents]);
+
+  const reloadEvents = useCallback(() => {
+    lastDateRange.current = ''; // force refetch
+    const calendarApi = calendarRef.current?.getApi();
+    if (calendarApi) {
+      loadEvents(calendarApi.view.activeStart, calendarApi.view.activeEnd);
+    }
+  }, [loadEvents]);
 
   const loadDoctors = async () => {
     try {
-      const response = await userService.getUsers();
+      const response = await userService.getDoctors();
       const doctorUsers = response.data
         .filter(user => user.roles.includes('ROLE_MEDECIN') && user.isActive === true)
         .map(user => ({ ...user, fullName: `${user.firstName} ${user.lastName}` }));
@@ -145,7 +187,7 @@ const Calendar: React.FC = () => {
         });
       }
       setDialogVisible(false);
-      loadEvents();
+      reloadEvents();
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
@@ -213,27 +255,21 @@ const Calendar: React.FC = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-4 flex-wrap">
-        <div className="flex align-items-center gap-2">
-          <div className="w-3 h-3 border-circle" style={{ backgroundColor: '#3498db' }}></div>
-          <span className="text-sm">Planifié</span>
-        </div>
-        <div className="flex align-items-center gap-2">
-          <div className="w-3 h-3 border-circle" style={{ backgroundColor: '#2ecc71' }}></div>
-          <span className="text-sm">Confirmé</span>
-        </div>
-        <div className="flex align-items-center gap-2">
-          <div className="w-3 h-3 border-circle" style={{ backgroundColor: '#f39c12' }}></div>
-          <span className="text-sm">En cours</span>
-        </div>
-        <div className="flex align-items-center gap-2">
-          <div className="w-3 h-3 border-circle" style={{ backgroundColor: '#27ae60' }}></div>
-          <span className="text-sm">Terminé</span>
-        </div>
-        <div className="flex align-items-center gap-2">
-          <div className="w-3 h-3 border-circle" style={{ backgroundColor: '#e74c3c' }}></div>
-          <span className="text-sm">Annulé</span>
-        </div>
+      <div className="flex gap-3 mb-4 flex-wrap">
+        {STATUS_CONFIG.map(({ key, label, color }) => (
+          <div
+            key={key}
+            className="ml-0 flex align-items-center gap-2 cursor-pointer px-2 py-1 border-round transition-all transition-duration-200"
+            style={{
+              opacity: activeFilters.has(key) ? 1 : 0.35,
+              border: `2px solid ${activeFilters.has(key) ? color : 'transparent'}`,
+            }}
+            onClick={() => toggleFilter(key)}
+          >
+            <div className="w-3 h-3 border-circle" style={{ backgroundColor: color }}></div>
+            <span className="text-sm font-medium">{label}</span>
+          </div>
+        ))}
       </div>
 
       {/* Calendar */}
@@ -252,7 +288,8 @@ const Calendar: React.FC = () => {
           selectMirror={true}
           dayMaxEvents={true}
           weekends={true}
-          events={events}
+          events={filteredEvents}
+          datesSet={handleDatesSet}
           select={handleDateSelect}
           eventClick={handleEventClick}
           height="auto"
@@ -265,7 +302,7 @@ const Calendar: React.FC = () => {
           }}
           allDayText="Toute la journée"
           slotMinTime="08:00:00"
-          slotMaxTime="20:00:00"
+          slotMaxTime="19:00:00"
           slotDuration="00:30:00"
           validRange={{
             start: new Date().toISOString().split('T')[0] // Sets min date to today
@@ -286,30 +323,30 @@ const Calendar: React.FC = () => {
             <div className="field col-12 md:col-6 field">
               <label className="block font-medium mb-2">Patient *</label>
               <AutoComplete
-                  value={selectedPatient}
-                  suggestions={patients}
-                  completeMethod={searchPatients}
-                  field="fullName"
-                  onChange={(e) => {
-                    setSelectedPatient(e.value);
-                    setFormData({ ...formData, patientId: e.value?.id });
-                  }}
-                  placeholder="Rechercher un patient..."
-                  className="w-full"
-                  inputClassName="w-full"
+                value={selectedPatient}
+                suggestions={patients}
+                completeMethod={searchPatients}
+                field="fullName"
+                onChange={(e) => {
+                  setSelectedPatient(e.value);
+                  setFormData({ ...formData, patientId: e.value?.id });
+                }}
+                placeholder="Rechercher un patient..."
+                className="w-full"
+                inputClassName="w-full"
               />
             </div>
 
             <div className="field col-12 md:col-6 field">
               <label className="block font-medium mb-2">Médecin *</label>
               <Dropdown
-                  value={formData.doctorId}
-                  options={doctors}
-                  optionLabel="fullName"
-                  optionValue="id"
-                  onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
-                  placeholder="Sélectionner un médecin"
-                  className="w-full"
+                value={formData.doctorId}
+                options={doctors}
+                optionLabel="fullName"
+                optionValue="id"
+                onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
+                placeholder="Sélectionner un médecin"
+                className="w-full"
               />
             </div>
           </div>

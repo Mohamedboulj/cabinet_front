@@ -127,7 +127,7 @@ const Users: React.FC = () => {
     setSubmitting(true);
     try {
       if (editingUser) {
-        // await userService.updateUser(editingUser.id, formData);
+        await userService.updateUser(editingUser.id, formData);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
@@ -310,6 +310,19 @@ const Users: React.FC = () => {
               ]}
               onChange={(e) => setFormData({ ...formData, roles: e.value })}
               placeholder="Sélectionner les rôles"
+              className="w-full"
+            />
+          </div>
+          <div className="field">
+            <label className="block font-medium mb-2">Devise</label>
+            <Dropdown
+              value={formData.currency || 'MAD'}
+              options={[
+                { label: 'MAD', value: 'MAD' },
+                { label: '€', value: 'EUR' },
+                { label: '$', value: 'USD' },
+              ]}
+              onChange={(e) => setFormData({ ...formData, currency: e.value })}
               className="w-full"
             />
           </div>

@@ -9,6 +9,7 @@ export interface User {
   licenseNumber?: string | null;
   roles: string[];
   isActive: boolean | null;
+  currency?: string;
   createdAt: string | null;
   updatedAt: string | null;
 }

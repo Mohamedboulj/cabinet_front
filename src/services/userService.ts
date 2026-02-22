@@ -23,4 +23,13 @@ export const userService = {
   async activateUser(id: number): Promise<void> {
     await api.post(`/users/${id}/activate`);
   },
+
+  async updateUser(id: number, newUser: Partial<User>): Promise<void>  {
+    await api.put(`/users/${id}`, { newUser });
+  },
+
+  async getDoctors(): Promise<ApiResponse<User[]>> {
+    const response = await api.get('/users/doctors');
+    return response.data;
+  }
 };
