@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { User, LoginCredentials, AuthState } from '../types';
+import type { LoginCredentials, AuthState } from '../types';
 import { authService } from '../services/authService';
 import api from '../services/api';
 import { setCurrency, removeCurrency } from '../utils/currencyUtils';

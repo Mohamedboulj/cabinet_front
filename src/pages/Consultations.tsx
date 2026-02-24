@@ -15,7 +15,6 @@ import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
-import patients from "./Patients.tsx";
 
 const Consultations: React.FC = () => {
   const navigate = useNavigate();

@@ -33,7 +33,7 @@ const Calendar: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [, setSelectedDate] = useState<Date | null>(null);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<User[]>([]);
@@ -172,14 +172,14 @@ const Calendar: React.FC = () => {
     setLoading(true);
     try {
       if (editingAppointment) {
-        await appointmentService.updateAppointment(editingAppointment.id, formData);
+        await appointmentService.updateAppointment(editingAppointment.id, formData as any);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
           detail: 'Rendez-vous mis à jour',
         });
       } else {
-        await appointmentService.createAppointment(formData);
+        await appointmentService.createAppointment(formData as any);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
