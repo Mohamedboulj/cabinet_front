@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { userService } from '../services/userService';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -15,8 +17,9 @@ const Settings: React.FC = () => {
     newPassword: '',
     confirmPassword: '',
   });
+  const [changingPassword, setChangingPassword] = useState(false);
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.current?.show({
         severity: 'error',
@@ -26,12 +29,28 @@ const Settings: React.FC = () => {
       return;
     }
 
-    toast.current?.show({
-      severity: 'success',
-      summary: 'Succès',
-      detail: 'Mot de passe modifié avec succès',
-    });
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setChangingPassword(true);
+    try {
+      await userService.resetPassword(
+        user!.id,
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Succès',
+        detail: 'Mot de passe modifié avec succès',
+      });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: getApiErrorMessage(error),
+      });
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   return (
@@ -108,6 +127,7 @@ const Settings: React.FC = () => {
               <Button
                 label="Changer le mot de passe"
                 icon="pi pi-check"
+                loading={changingPassword}
                 onClick={handlePasswordChange}
                 className="mt-2"
               />

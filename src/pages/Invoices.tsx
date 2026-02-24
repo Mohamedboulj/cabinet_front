@@ -4,6 +4,7 @@ import { invoiceService } from '../services/invoiceService';
 import { patientService } from '../services/patientService';
 import { consultationService } from '../services/consultationService';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getCurrency } from '../utils/currencyUtils';
 import type { Invoice, Patient, Consultation } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -237,15 +238,15 @@ const Invoices: React.FC = () => {
   };
 
   const amountBodyTemplate = (rowData: Invoice) => {
-    return `${parseFloat(rowData.totalAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD`;
+    return `${parseFloat(rowData.totalAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${getCurrency()}`;
   };
 
   const balanceBodyTemplate = (rowData: Invoice) => {
     const balance = parseFloat(rowData.totalAmount) - parseFloat(rowData.paidAmount);
     return balance > 0 ? (
-      <span className="text-red-500 font-semibold">{balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+      <span className="text-red-500 font-semibold">{balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
     ) : (
-      <span className="text-green-500">0 MAD</span>
+      <span className="text-green-500">0 {getCurrency()}</span>
     );
   };
 
@@ -481,7 +482,7 @@ const Invoices: React.FC = () => {
 
           {/* Discount */}
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Remise (MAD)</label>
+            <label className="block font-medium mb-2">Remise ({getCurrency()})</label>
             <InputText
               value={formData.discountAmount || '0'}
               onChange={(e) => setFormData({ ...formData, discountAmount: e.target.value })}
@@ -567,15 +568,15 @@ const Invoices: React.FC = () => {
               <div className="w-15rem">
                 <div className="flex justify-content-between mb-2">
                   <span>Sous-total:</span>
-                  <span className="font-semibold">{calculateSubtotal().toFixed(2)} MAD</span>
+                  <span className="font-semibold">{calculateSubtotal().toFixed(2)} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between mb-2">
                   <span>Remise:</span>
-                  <span className="text-orange-500">-{parseFloat(formData.discountAmount || '0').toFixed(2)} MAD</span>
+                  <span className="text-orange-500">-{parseFloat(formData.discountAmount || '0').toFixed(2)} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between text-lg font-bold border-top-1 surface-border pt-2">
                   <span>Total:</span>
-                  <span>{(calculateSubtotal() - parseFloat(formData.discountAmount || '0')).toFixed(2)} MAD</span>
+                  <span>{(calculateSubtotal() - parseFloat(formData.discountAmount || '0')).toFixed(2)} {getCurrency()}</span>
                 </div>
               </div>
             </div>

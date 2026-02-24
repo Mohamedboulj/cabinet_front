@@ -93,11 +93,41 @@ const Users: React.FC = () => {
     });
   };
 
+  const handleToggleActive = (user: User) => {
+    const action = user.isActive ? 'désactiver' : 'activer';
+    confirmDialog({
+      message: `Êtes-vous sûr de vouloir ${action} ${user.firstName} ${user.lastName} ?`,
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          if (user.isActive) {
+            await userService.deactivateUser(user.id);
+          } else {
+            await userService.activateUser(user.id);
+          }
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Succès',
+            detail: `Utilisateur ${user.isActive ? 'désactivé' : 'activé'} avec succès`,
+          });
+          loadUsers();
+        } catch (error: any) {
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: getApiErrorMessage(error),
+          });
+        }
+      },
+    });
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
       if (editingUser) {
-        // await userService.updateUser(editingUser.id, formData);
+        await userService.updateUser(editingUser.id, formData);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
@@ -181,17 +211,28 @@ const Users: React.FC = () => {
                 <Button
                   icon="pi pi-pencil"
                   className="p-button-rounded p-button-warning p-button-sm"
+                  tooltip="Modifier"
+                  tooltipOptions={{ position: 'top' }}
                   onClick={() => openEditDialog(rowData)}
+                />
+                <Button
+                  icon={rowData.isActive ? 'pi pi-lock' : 'pi pi-lock-open'}
+                  className={`p-button-rounded p-button-sm ${rowData.isActive ? 'p-button-secondary' : 'p-button-success'}`}
+                  tooltip={rowData.isActive ? 'Désactiver' : 'Activer'}
+                  tooltipOptions={{ position: 'top' }}
+                  onClick={() => handleToggleActive(rowData)}
                 />
                 <Button
                   icon="pi pi-trash"
                   className="p-button-rounded p-button-danger p-button-sm"
+                  tooltip="Supprimer"
+                  tooltipOptions={{ position: 'top' }}
                   onClick={() => confirmDelete(rowData)}
                 />
               </div>
             )}
             header="Actions"
-            style={{ width: '8rem' }}
+            style={{ width: '10rem' }}
           />
         </DataTable>
       )}
@@ -269,6 +310,19 @@ const Users: React.FC = () => {
               ]}
               onChange={(e) => setFormData({ ...formData, roles: e.value })}
               placeholder="Sélectionner les rôles"
+              className="w-full"
+            />
+          </div>
+          <div className="field">
+            <label className="block font-medium mb-2">Devise</label>
+            <Dropdown
+              value={formData.currency || 'MAD'}
+              options={[
+                { label: 'MAD', value: 'MAD' },
+                { label: '€', value: 'EUR' },
+                { label: '$', value: 'USD' },
+              ]}
+              onChange={(e) => setFormData({ ...formData, currency: e.value })}
               className="w-full"
             />
           </div>

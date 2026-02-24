@@ -6,6 +6,7 @@ import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 import ListItemSkeleton from '../components/skeletons/ListItemSkeleton';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
+import { getCurrency } from '../utils/currencyUtils';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const Dashboard: React.FC = () => {
         <div className="col-12 md:col-6 lg:col-3">
           <StatCard
             title="Revenus du mois"
-            value={`${(stats?.invoices.thisMonth.paidAmount || 0).toLocaleString()} €`}
+            value={`${(stats?.invoices.thisMonth.paidAmount || 0).toLocaleString()} ${getCurrency()}`}
             subtitle={`${stats?.invoices.unpaidCount || 0} factures impayées`}
             icon="pi-money-bill"
             color="#8B5CF6"
@@ -270,7 +271,7 @@ const UnpaidInvoices: React.FC = () => {
           </div>
           <div className="flex align-items-center gap-2">
             <span className="font-semibold text-red-500">
-              {parseFloat(inv.totalAmount).toLocaleString()} €
+              {parseFloat(inv.totalAmount).toLocaleString()} {getCurrency()}
             </span>
             <i className="pi pi-chevron-right text-400"></i>
           </div>

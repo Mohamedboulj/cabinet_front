@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { User, LoginCredentials, AuthState } from '../types';
 import { authService } from '../services/authService';
 import api from '../services/api';
+import { setCurrency, removeCurrency } from '../utils/currencyUtils';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -28,6 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           const user = await authService.getCurrentUser();
+          setCurrency(user.currency || 'MAD');
           setState({
             user,
             token,
@@ -56,16 +58,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const { token } = await authService.login(credentials);
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
+
       const user = await authService.getCurrentUser();
-      
+      setCurrency(user.currency || 'MAD');
+
       setState({
         user,
         token,
         isAuthenticated: true,
         isLoading: false,
       });
-      
+
       navigate('/dashboard');
     } catch (error) {
       throw error;
@@ -74,6 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem('token');
+    removeCurrency();
     delete api.defaults.headers.common['Authorization'];
     setState({
       user: null,

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { invoiceService } from '../services/invoiceService';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getCurrency } from '../utils/currencyUtils';
 import type { Invoice } from '../types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
@@ -255,13 +256,13 @@ const InvoiceDetail: React.FC = () => {
                 field="unitPrice"
                 header="Prix unitaire"
                 style={{ width: '8rem' }}
-                body={(rowData) => `${parseFloat(rowData.unitPrice).toFixed(2)} MAD`}
+                body={(rowData) => `${parseFloat(rowData.unitPrice).toFixed(2)} ${getCurrency()}`}
               />
               <Column
                 field="totalPrice"
                 header="Total"
                 style={{ width: '8rem' }}
-                body={(rowData) => `${parseFloat(rowData.totalPrice).toFixed(2)} MAD`}
+                body={(rowData) => `${parseFloat(rowData.totalPrice).toFixed(2)} ${getCurrency()}`}
               />
             </DataTable>
 
@@ -269,29 +270,29 @@ const InvoiceDetail: React.FC = () => {
               <div className="w-15rem">
                 <div className="flex justify-content-between mb-2">
                   <span>Sous-total:</span>
-                  <span>{parseFloat(invoice.subtotal).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                  <span>{parseFloat(invoice.subtotal).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                 </div>
                 {parseFloat(invoice.discountAmount) > 0 && (
                   <div className="flex justify-content-between mb-2 text-orange-500">
                     <span>Remise:</span>
-                    <span>-{parseFloat(invoice.discountAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                    <span>-{parseFloat(invoice.discountAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                   </div>
                 )}
                 <div className="flex justify-content-between mb-2">
                   <span>TVA:</span>
-                  <span>{parseFloat(invoice.taxAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                  <span>{parseFloat(invoice.taxAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between mb-2 text-lg font-bold">
                   <span>Total:</span>
-                  <span>{parseFloat(invoice.totalAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                  <span>{parseFloat(invoice.totalAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between mb-2 text-green-500">
                   <span>Payé:</span>
-                  <span>{parseFloat(invoice.paidAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                  <span>{parseFloat(invoice.paidAmount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                 </div>
                 <div className={`flex justify-content-between text-lg font-bold ${balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
                   <span>Solde:</span>
-                  <span>{balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                  <span>{balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                 </div>
               </div>
             </div>
@@ -308,7 +309,7 @@ const InvoiceDetail: React.FC = () => {
                 {invoice.payments.map((payment) => (
                   <div key={payment.id} className="p-3 surface-100 border-round">
                     <div className="flex justify-content-between align-items-center">
-                      <span className="font-semibold">{parseFloat(payment.amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD</span>
+                      <span className="font-semibold">{parseFloat(payment.amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} {getCurrency()}</span>
                       <Tag value={paymentMethodLabel(payment.paymentMethod)} />
                     </div>
                     <div className="text-sm text-500 mt-1">
@@ -362,7 +363,7 @@ const InvoiceDetail: React.FC = () => {
               className="w-full"
               placeholder="0.00"
             />
-            <small className="text-500">Solde restant: {balance.toFixed(2)} MAD</small>
+            <small className="text-500">Solde restant: {balance.toFixed(2)} {getCurrency()}</small>
           </div>
           <div className="field">
             <label className="block font-medium mb-2">Mode de paiement *</label>
