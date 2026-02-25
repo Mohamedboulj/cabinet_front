@@ -5,7 +5,6 @@ import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
-import { Badge } from 'primereact/badge';
 import type { User } from '../../types';
 
 interface TopbarProps {
@@ -60,13 +59,13 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
         className="p-button-text p-button-rounded"
         badge={notifications > 0 ? notifications.toString() : undefined}
         badgeClassName="p-badge-danger"
-        onClick={() => {}}
+        onClick={() => { }}
       />
-      
+
       <div className="flex align-items-center gap-2 cursor-pointer" onClick={(e) => menuRef.current?.toggle(e)}>
-        <Avatar 
-          label={user ? `${user.firstName[0]}${user.lastName[0]}` : 'U'} 
-          shape="circle" 
+        <Avatar
+          label={user ? `${user.firstName[0]}${user.lastName[0]}` : 'U'}
+          shape="circle"
           className="bg-primary text-white"
         />
         <div className="hidden md:block">
@@ -75,11 +74,11 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
         </div>
         <i className="pi pi-chevron-down text-sm"></i>
       </div>
-      
-      <Menu 
-        model={userMenuItems} 
-        popup 
-        ref={menuRef} 
+
+      <Menu
+        model={userMenuItems}
+        popup
+        ref={menuRef}
         className="w-48"
       />
     </div>

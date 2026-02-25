@@ -10,6 +10,7 @@ export interface User {
   roles: string[];
   isActive: boolean | null;
   currency?: string;
+  password?: string;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -35,6 +36,8 @@ export interface Patient {
   insuranceNumber?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+  consultations?: Consultation[];
+  appointments?: Appointment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -211,4 +214,14 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+}
+
+export interface Holiday {
+  description: string;
+  day: number;
+  month: number;
+  date: string;
+  holiday_type: 'National' | 'Religious' | 'Exceptional';
+  country_code: string;
+  status: string;
 }

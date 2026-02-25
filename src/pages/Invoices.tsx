@@ -32,7 +32,7 @@ const Invoices: React.FC = () => {
   const navigate = useNavigate();
   const toast = useRef<Toast>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [, setPatients] = useState<Patient[]>([]);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -286,27 +286,6 @@ const Invoices: React.FC = () => {
     </div>
   );
 
-  const handlePrint = async (invoice: Invoice) => {
-    try {
-      const blob = await invoiceService.printInvoice(invoice.id);
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      /* Optional: triggering direct download
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `facture-${invoice.invoiceNumber}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      */
-    } catch (error) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible d\'imprimer la facture',
-      });
-    }
-  };
 
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">

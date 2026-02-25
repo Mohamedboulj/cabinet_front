@@ -5,10 +5,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { appointmentService } from '../services/appointmentService';
+import { holidayService } from '../services/holidayService';
 import { patientService } from '../services/patientService';
 import { userService } from '../services/userService';
 import { getApiErrorMessage } from '../utils/errorUtils';
-import type { Appointment, Patient, User } from '../types';
+import type { Appointment, Patient, User, Holiday } from '../types';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Calendar as PrimeCalendar } from 'primereact/calendar';
@@ -26,18 +27,26 @@ const STATUS_CONFIG: { key: string; label: string; color: string }[] = [
   { key: 'CANCELLED', label: 'Annulé', color: '#e74c3c' },
 ];
 
+const HOLIDAY_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
+  National: { bg: '#e8f5e9', border: '#43a047', text: '#2e7d32', label: 'Fête nationale' },
+  Religious: { bg: '#f3e5f5', border: '#8e24aa', text: '#6a1b9a', label: 'Fête religieuse' },
+  Exceptional: { bg: '#fff3e0', border: '#fb8c00', text: '#e65100', label: 'Jour exceptionnel' },
+};
+
 const Calendar: React.FC = () => {
   const navigate = useNavigate();
   const toast = useRef<Toast>(null);
   const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [, setSelectedDate] = useState<Date | null>(null);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<User[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [showHolidays, setShowHolidays] = useState(true);
   const [activeFilters, setActiveFilters] = useState<Set<string>>(
     new Set(STATUS_CONFIG.map(s => s.key))
   );
@@ -52,13 +61,32 @@ const Calendar: React.FC = () => {
     type?: string;
   }>({});
 
+  const holidayEvents = useMemo(() => {
+    if (!showHolidays) return [];
+    return holidays.map(h => {
+      const colors = HOLIDAY_COLORS[h.holiday_type] || HOLIDAY_COLORS.Exceptional;
+      return {
+        id: `holiday-${h.date}`,
+        title: h.description,
+        start: h.date,
+        allDay: true,
+        display: 'background',
+        backgroundColor: colors.bg,
+        borderColor: colors.border,
+        textColor: colors.text,
+        extendedProps: { isHoliday: true, holidayType: h.holiday_type },
+      };
+    });
+  }, [holidays, showHolidays]);
+
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
+    const filtered = events.filter(event => {
       const status = event.extendedProps?.status || event.status;
       if (!status) return true;
       return activeFilters.has(status);
     });
-  }, [events, activeFilters]);
+    return [...filtered, ...holidayEvents];
+  }, [events, activeFilters, holidayEvents]);
 
   const toggleFilter = (statusKey: string) => {
     setActiveFilters(prev => {
@@ -73,10 +101,27 @@ const Calendar: React.FC = () => {
   };
 
   const lastDateRange = useRef<string>('');
+  const loadedYears = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     loadDoctors();
   }, []);
+
+  const loadHolidays = async (year: number) => {
+    if (loadedYears.current.has(year)) return;
+    loadedYears.current.add(year);
+    try {
+      const data = await holidayService.getHolidays(year);
+      setHolidays(prev => {
+        const existingDates = new Set(prev.map(h => h.date));
+        const newHolidays = data.filter(h => !existingDates.has(h.date));
+        return [...prev, ...newHolidays];
+      });
+    } catch (error) {
+      loadedYears.current.delete(year);
+      console.error('Failed to load holidays:', error);
+    }
+  };
 
   const loadEvents = useCallback(async (start: Date, end: Date) => {
     const rangeKey = `${start.toISOString()}_${end.toISOString()}`;
@@ -100,6 +145,13 @@ const Calendar: React.FC = () => {
 
   const handleDatesSet = useCallback((dateInfo: any) => {
     loadEvents(dateInfo.start, dateInfo.end);
+    // Load holidays for any year visible in the range
+    const startYear = dateInfo.start.getFullYear();
+    const endYear = dateInfo.end.getFullYear();
+    loadHolidays(startYear);
+    if (endYear !== startYear) {
+      loadHolidays(endYear);
+    }
   }, [loadEvents]);
 
   const reloadEvents = useCallback(() => {
@@ -172,14 +224,14 @@ const Calendar: React.FC = () => {
     setLoading(true);
     try {
       if (editingAppointment) {
-        await appointmentService.updateAppointment(editingAppointment.id, formData);
+        await appointmentService.updateAppointment(editingAppointment.id, formData as any);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
           detail: 'Rendez-vous mis à jour',
         });
       } else {
-        await appointmentService.createAppointment(formData);
+        await appointmentService.createAppointment(formData as any);
         toast.current?.show({
           severity: 'success',
           summary: 'Succès',
@@ -255,7 +307,7 @@ const Calendar: React.FC = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-3 mb-4 flex-wrap">
+      <div className="flex gap-3 mb-2 flex-wrap">
         {STATUS_CONFIG.map(({ key, label, color }) => (
           <div
             key={key}
@@ -268,6 +320,27 @@ const Calendar: React.FC = () => {
           >
             <div className="w-3 h-3 border-circle" style={{ backgroundColor: color }}></div>
             <span className="text-sm font-medium">{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Holiday Legend */}
+      <div className="flex gap-3 mb-4 flex-wrap align-items-center">
+        <div
+          className="flex align-items-center gap-2 cursor-pointer px-2 py-1 border-round transition-all transition-duration-200"
+          style={{
+            opacity: showHolidays ? 1 : 0.45,
+            border: `2px solid ${showHolidays ? '#666' : 'transparent'}`,
+          }}
+          onClick={() => setShowHolidays(!showHolidays)}
+        >
+          <i className="pi pi-calendar text-sm"></i>
+          <span className="text-sm font-medium">Jours fériés</span>
+        </div>
+        {showHolidays && Object.entries(HOLIDAY_COLORS).map(([type, colors]) => (
+          <div key={type} className="flex align-items-center gap-2 px-2 py-1">
+            <div className="w-3 h-3 border-round" style={{ backgroundColor: colors.bg, border: `2px solid ${colors.border}` }}></div>
+            <span className="text-sm" style={{ color: colors.text }}>{colors.label}</span>
           </div>
         ))}
       </div>
