@@ -62,4 +62,22 @@ export const patientService = {
     const response = await api.get(`/patients/check-cin/${cin}`);
     return response.data;
   },
+
+  async validateImportFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/patients/import/validate', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response;
+  },
+
+  async importPatients(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/patients/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response;
+  },
 };

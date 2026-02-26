@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import PatientDetail from './pages/PatientDetail';
+import PatientImport from './pages/PatientImport';
 import Appointments from './pages/Appointments';
 import Calendar from './pages/Calendar';
 import Consultations from './pages/Consultations';
@@ -22,9 +23,9 @@ import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
 // Protected Route component
-const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({ 
-  children, 
-  requiredRole 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({
+  children,
+  requiredRole
 }) => {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 
@@ -60,11 +61,11 @@ function App() {
 
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
       />
-      
+
       <Route path="/" element={
         <ProtectedRoute>
           <MainLayout />
@@ -73,6 +74,7 @@ function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="patients" element={<Patients />} />
+        <Route path="patients/import" element={<PatientImport />} />
         <Route path="patients/:id" element={<PatientDetail />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="calendar" element={<Calendar />} />
