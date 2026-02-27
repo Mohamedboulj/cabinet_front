@@ -111,7 +111,7 @@ const Patients: React.FC = () => {
 
   const confirmDelete = (patient: Patient) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer ${patient.fullName} ?`,
+      message: `Êtes-vous sûr de vouloir supprimer ${patient.lastName} ${patient.firstName} ?`,
       header: 'Confirmation de suppression',
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(patient),
@@ -155,12 +155,21 @@ const Patients: React.FC = () => {
         className="p-button-rounded p-button-danger p-button-sm"
         onClick={() => confirmDelete(rowData)}
         tooltip="Supprimer"
+        tooltipOptions={{ position: 'top' }}
       />
     </div>
   );
 
   const ageBodyTemplate = (rowData: Patient) => {
-    return rowData.age ? `${rowData.age} ans` : '-';
+    if (!rowData.birthDate) return '-';
+    const birthDate = new Date(rowData.birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return `${age} ans`;
   };
 
   const genderBodyTemplate = (rowData: Patient) => {

@@ -13,12 +13,6 @@ import { FileUpload, type FileUploadSelectEvent } from 'primereact/fileupload';
 import { Card } from 'primereact/card';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 
-const EXPECTED_HEADERS = [
-    'first_name', 'last_name', 'cin', 'phone', 'email', 'birth_day',
-    'gender', 'address', 'city', 'blood_type', 'medical_history',
-    'allergies', 'chronic_conditions', 'insurance_provider',
-    'insurance_number', 'emergency_contact_name', 'emergency_contact_phone',
-];
 
 interface ValidationError {
     row: number;
@@ -187,7 +181,19 @@ const PatientImport: React.FC = () => {
             <Message
                 severity="info"
                 className="w-full"
-                text={`En-têtes attendus : ${EXPECTED_HEADERS.join(', ')}`}
+                content={
+                    <div className="flex align-items-center justify-content-between w-full gap-3">
+                        <span>Téléchargez le modèle Excel pour remplir vos données patients.</span>
+                        <a href="../../../public/template/patient_import_template.xlsx" download>
+                            <Button
+                                label="Télécharger le modèle"
+                                icon="pi pi-download"
+                                className="p-button-sm p-button-outlined"
+                                type="button"
+                            />
+                        </a>
+                    </div>
+                }
             />
 
             <div className="flex flex-column align-items-center gap-3 p-4 border-1 border-dashed border-300 border-round">
