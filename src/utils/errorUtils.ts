@@ -20,6 +20,11 @@ export function getApiErrorMessage(error: any, fallback: string = 'Une erreur es
         return data;
     }
 
+    // Database Duplicate Entry (MySQL Error 1062)
+    if (data.code === 1062) {
+        return "One or more patients in the file already exist with the same CIN or Email.";
+    }
+
     // Common backend error field names
     if (data.error) return data.error;
     if (data.message) return data.message;
