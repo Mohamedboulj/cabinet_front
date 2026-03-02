@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { consultationService } from '../services/consultationService';
 import { patientService } from '../services/patientService';
-import type { Consultation, Patient } from '../types';
+import { userService } from '../services/userService';
+import type { Consultation, Patient, User } from '../types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -21,6 +22,7 @@ const Consultations: React.FC = () => {
   const toast = useRef<Toast>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [doctors, setDoctors] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -31,6 +33,7 @@ const Consultations: React.FC = () => {
   useEffect(() => {
     loadConsultations();
     loadPatients();
+    loadDoctors();
   }, []);
 
   const loadConsultations = async () => {
@@ -55,6 +58,15 @@ const Consultations: React.FC = () => {
       setPatients(response.data);
     } catch (error) {
       // Silent fail – patients are only needed for the dropdown
+    }
+  };
+
+  const loadDoctors = async () => {
+    try {
+      const response = await userService.getDoctors();
+      setDoctors(response.data);
+    } catch (error) {
+      // Silent fail
     }
   };
 
@@ -89,6 +101,7 @@ const Consultations: React.FC = () => {
     setEditingConsultation(consultation);
     setFormData({
       patientId: consultation.patient?.id,
+      doctorId: consultation.doctor?.id,
       reason: consultation.reason,
       anamnesis: consultation.anamnesis,
       examination: consultation.examination,
@@ -140,7 +153,7 @@ const Consultations: React.FC = () => {
 
   const confirmDelete = (consultation: Consultation) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer la consultation #${consultation.id} ?`,
+      message: `Êtes-vous sûr de vouloir supprimer cette consultation ?`,
       header: 'Confirmation de suppression',
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(consultation),
@@ -375,6 +388,21 @@ const Consultations: React.FC = () => {
             />
           </div>
 
+          {/* Doctor Selection */}
+          <div className="col-12 md:col-6 field">
+            <label className="block font-medium mb-2">Médecin *</label>
+            <Dropdown
+              value={formData.doctorId}
+              options={doctors.map((d) => ({ label: `${d.firstName} ${d.lastName}`, value: d.id }))}
+              onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
+              placeholder="Sélectionner un médecin"
+              className="w-full"
+              filter
+              filterPlaceholder="Rechercher..."
+              disabled={!!editingConsultation} // Assuming the doctor shouldn't be changed for an existing consultation either, like patient.
+            />
+          </div>
+
           {/* Status */}
           <div className="col-12 md:col-6 field">
             <label className="block font-medium mb-2">Statut</label>
@@ -392,7 +420,7 @@ const Consultations: React.FC = () => {
           </div>
 
           {/* Reason */}
-          <div className="col-12 field">
+          <div className="col-12 md:col-6 field">
             <label className="block font-medium mb-2">Motif de consultation *</label>
             <InputText
               value={formData.reason || ''}
