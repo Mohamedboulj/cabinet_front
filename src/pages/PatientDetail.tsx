@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patientService';
-import type { Patient, Consultation, Appointment } from '../types';
+import { auditLogService } from '../services/auditLogService';
+import type { Patient, Consultation, Appointment, AuditLog } from '../types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -10,6 +11,7 @@ import PatientDetailSkeleton from '../components/skeletons/PatientDetailSkeleton
 import { Tag } from 'primereact/tag';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import ActivityHistory from '../components/ActivityHistory';
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,10 +21,13 @@ const PatientDetail: React.FC = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditLoading, setAuditLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
       loadPatient(parseInt(id));
+      loadAuditLogs();
     }
   }, [id]);
 
@@ -45,6 +50,18 @@ const PatientDetail: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAuditLogs = async () => {
+    setAuditLoading(true);
+    try {
+      const response = await auditLogService.getAuditLogs('Patient', parseInt(id!));
+      setAuditLogs(response.data);
+    } catch {
+      setAuditLogs([]);
+    } finally {
+      setAuditLoading(false);
     }
   };
 
@@ -159,7 +176,7 @@ const PatientDetail: React.FC = () => {
                 <div className="text-500 text-sm">Âge / Date de naissance</div>
                 <div className="font-medium">
                   {patient.age ? `${patient.age} ans` : '-'}
-                  {patient.birthDate && ` (${new Date(patient.birthDate).toLocaleDateString('fr-FR')})`}
+                  {patient.birthDate && ` ${new Date(patient.birthDate).toLocaleDateString('fr-FR')}`}
                 </div>
               </div>
             </div>
@@ -290,6 +307,10 @@ const PatientDetail: React.FC = () => {
               />
             </DataTable>
           </Card>
+        </TabPanel>
+
+        <TabPanel header="Historique des activités" leftIcon="pi pi-history mr-2">
+          <ActivityHistory logs={auditLogs} loading={auditLoading} />
         </TabPanel>
       </TabView>
     </div>

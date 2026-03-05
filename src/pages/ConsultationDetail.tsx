@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { consultationService } from '../services/consultationService';
+import { auditLogService } from '../services/auditLogService';
 import { getApiErrorMessage } from '../utils/errorUtils';
-import type { Consultation } from '../types';
+import type { Consultation, AuditLog } from '../types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
@@ -12,6 +13,7 @@ import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import ConsultationDetailSkeleton from '../components/skeletons/ConsultationDetailSkeleton';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import ActivityHistory from '../components/ActivityHistory';
 
 const ConsultationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,10 +21,13 @@ const ConsultationDetail: React.FC = () => {
   const toast = useRef<Toast>(null);
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditLoading, setAuditLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
       loadConsultation(parseInt(id));
+      loadAuditLogs();
     }
   }, [id]);
 
@@ -39,6 +44,18 @@ const ConsultationDetail: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAuditLogs = async () => {
+    setAuditLoading(true);
+    try {
+      const response = await auditLogService.getAuditLogs('Consultation', parseInt(id!));
+      setAuditLogs(response.data);
+    } catch {
+      setAuditLogs([]);
+    } finally {
+      setAuditLoading(false);
     }
   };
 
@@ -313,6 +330,10 @@ const ConsultationDetail: React.FC = () => {
               />
             </DataTable>
           </Card>
+        </TabPanel>
+
+        <TabPanel header="Historique des activités" leftIcon="pi pi-history mr-2">
+          <ActivityHistory logs={auditLogs} loading={auditLoading} />
         </TabPanel>
       </TabView>
     </div>

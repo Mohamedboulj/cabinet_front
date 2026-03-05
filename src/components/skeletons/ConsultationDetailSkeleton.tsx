@@ -50,6 +50,7 @@ const ConsultationDetailSkeleton: React.FC = () => {
                     <Skeleton width="8rem" height="1.5rem" />
                     <Skeleton width="8rem" height="1.5rem" />
                     <Skeleton width="8rem" height="1.5rem" />
+                    <Skeleton width="8rem" height="1.5rem" />
                 </div>
                 <div className="grid">
                     <div className="col-12 md:col-6">
