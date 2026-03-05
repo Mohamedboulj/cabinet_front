@@ -190,10 +190,11 @@ const Appointments: React.FC = () => {
           rowsPerPageOptions={[10, 25, 50]}
           emptyMessage="Aucun rendez-vous trouvé"
           className="shadow-2"
+          onRowClick={(e) => navigate(`/appointments/${e.data.id}`)}
+          rowClassName={() => 'cursor-pointer'}
         >
-          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-          <Column field="patient.fullName" header="Patient" sortable />
-          <Column field="doctor.fullName" header="Médecin" sortable />
+          <Column field="patient.lastName" header="Patient" body={(row: Appointment) => `${row.patient.firstName} ${row.patient.lastName}`} sortable />
+          <Column field="doctor.lastName" header="Médecin" body={(row: Appointment) => `${row.doctor.firstName} ${row.doctor.lastName}`} sortable />
           <Column field="startAt" header="Date" body={dateBodyTemplate} sortable />
           <Column field="reason" header="Motif" />
           <Column field="type" header="Type" sortable />

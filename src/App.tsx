@@ -12,6 +12,7 @@ import Patients from './pages/Patients';
 import PatientDetail from './pages/PatientDetail';
 import PatientImport from './pages/PatientImport';
 import Appointments from './pages/Appointments';
+import AppointmentDetail from './pages/AppointmentDetail';
 import Calendar from './pages/Calendar';
 import Consultations from './pages/Consultations';
 import ConsultationDetail from './pages/ConsultationDetail';
@@ -77,6 +78,7 @@ function App() {
         <Route path="patients/import" element={<PatientImport />} />
         <Route path="patients/:id" element={<PatientDetail />} />
         <Route path="appointments" element={<Appointments />} />
+        <Route path="appointments/:id" element={<AppointmentDetail />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="consultations" element={<Consultations />} />
         <Route path="consultations/:id" element={<ConsultationDetail />} />

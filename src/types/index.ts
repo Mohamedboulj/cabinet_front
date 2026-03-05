@@ -225,3 +225,16 @@ export interface Holiday {
   country_code: string;
   status: string;
 }
+
+export interface AuditLog {
+  id: number;
+  action: 'CREATE' | 'UPDATE' | 'IMPORT' | 'DELETE';
+  entityType: string;
+  entityId: number;
+  description: string;
+  userEmail: string;
+  user: string;
+  oldValues: Record<string, any>;
+  newValues: Record<string, any>;
+  createdAt: string;
+}
