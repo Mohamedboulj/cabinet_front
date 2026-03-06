@@ -195,6 +195,7 @@
             "confirm": "Confirmer l'import"
         },
         "step1": {
+            "infoMessage": "Téléchargez un fichier Excel contenant les données des patients (.xlsx ou .xls).",
             "downloadHint": "Téléchargez le modèle Excel pour remplir vos données patients.",
             "downloadTemplate": "Télécharger le modèle",
             "chooseFile": "Choisir un fichier Excel",

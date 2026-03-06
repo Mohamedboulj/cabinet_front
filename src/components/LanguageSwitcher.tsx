@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'primereact/menu';
+import { Button } from 'primereact/button';
 
 const FranceFlag = () => (
 
@@ -68,17 +69,15 @@ const LanguageSwitcher: React.FC = () => {
 
     return (
         <>
-            <button
+            <Button
+                tooltip={currentLang === 'fr' ? 'Changer la langue' : 'Change language'}
                 onClick={(e) => menuRef.current?.toggle(e)}
-                title={currentLang === 'fr' ? 'Changer la langue' : 'Change language'}
                 style={{
                     background: 'transparent',
                     border: 'none',
                     outline: 'none',
                     borderRadius: '50%',
                     cursor: 'pointer',
-                    width: '40px',
-                    height: '40px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -90,7 +89,7 @@ const LanguageSwitcher: React.FC = () => {
                 onBlur={(e) => (e.currentTarget.style.boxShadow = 'none')}
             >
                 <CurrentFlag />
-            </button>
+            </Button>
             <Menu
                 model={menuItems}
                 popup

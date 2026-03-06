@@ -12,6 +12,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { FileUpload, type FileUploadSelectEvent } from 'primereact/fileupload';
 import { Card } from 'primereact/card';
 import { Accordion, AccordionTab } from 'primereact/accordion';
+import { useTranslation } from 'react-i18next';
 
 
 interface ValidationError {
@@ -45,6 +46,7 @@ interface ImportResult {
 
 const PatientImport: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const toast = useRef<Toast>(null);
     const fileUploadRef = useRef<FileUpload>(null);
 
@@ -66,9 +68,9 @@ const PatientImport: React.FC = () => {
     const [uploadError, setUploadError] = useState<string | null>(null);
 
     const stepItems = [
-        { label: 'Télécharger le fichier' },
-        { label: 'Vérifier & Valider' },
-        { label: 'Confirmer l\'import' },
+        { label: t('patientImport.steps.upload') },
+        { label: t('patientImport.steps.validate') },
+        { label: t('patientImport.steps.confirm') },
     ];
 
     const handleFileSelect = (e: FileUploadSelectEvent) => {
@@ -103,13 +105,13 @@ const PatientImport: React.FC = () => {
             if (status === 400) {
                 // Header/format error — stay on Step 1
                 const data = error.response?.data;
-                let detail = data?.error || data?.detail || data?.message || 'Format de fichier invalide';
+                let detail = data?.error || data?.detail || data?.message || t('patientImport.errors.invalidFormat');
 
                 if (data?.missing_headers?.length) {
-                    detail += `\nEn-têtes manquants : ${data.missing_headers.join(', ')}`;
+                    detail += `\n${t('patientImport.errors.missingHeaders')} : ${data.missing_headers.join(', ')}`;
                 }
                 if (data?.extra_headers?.length) {
-                    detail += `\nEn-têtes en trop : ${data.extra_headers.join(', ')}`;
+                    detail += `\n${t('patientImport.errors.extraHeaders')} : ${data.extra_headers.join(', ')}`;
                 }
 
                 setUploadError(detail);
@@ -124,8 +126,8 @@ const PatientImport: React.FC = () => {
             } else {
                 toast.current?.show({
                     severity: 'error',
-                    summary: 'Erreur',
-                    detail: getApiErrorMessage(error, 'Erreur lors de la validation'),
+                    summary: t('common.error'),
+                    detail: getApiErrorMessage(error, t('patientImport.errors.validationFailed')),
                 });
             }
         } finally {
@@ -147,15 +149,15 @@ const PatientImport: React.FC = () => {
 
             toast.current?.show({
                 severity: 'success',
-                summary: 'Succès',
-                detail: data.message || 'Import réussi',
+                summary: t('common.success'),
+                detail: data.message || t('patientImport.successMessage'),
                 life: 4000,
             });
         } catch (error: any) {
             toast.current?.show({
                 severity: 'error',
-                summary: 'Erreur',
-                detail: getApiErrorMessage(error, 'Erreur lors de l\'import'),
+                summary: t('common.error'),
+                detail: getApiErrorMessage(error, t('patientImport.errors.importFailed')),
             });
         } finally {
             setImporting(false);
@@ -183,10 +185,10 @@ const PatientImport: React.FC = () => {
                 className="w-full"
                 content={
                     <div className="flex align-items-center justify-content-between w-full gap-3">
-                        <span>Téléchargez le modèle Excel pour remplir vos données patients.</span>
+                        <span>{t('patientImport.step1.infoMessage')}</span>
                         <a href="../../../public/template/patient_import_template.xlsx" download>
                             <Button
-                                label="Télécharger le modèle"
+                                label={t('patientImport.step1.downloadTemplate')}
                                 icon="pi pi-download"
                                 className="p-button-sm p-button-outlined"
                                 type="button"
@@ -203,7 +205,7 @@ const PatientImport: React.FC = () => {
                     mode="basic"
                     accept=".xlsx,.xls"
                     maxFileSize={10000000}
-                    chooseLabel={selectedFile ? selectedFile.name : 'Choisir un fichier Excel'}
+                    chooseLabel={selectedFile ? selectedFile.name : t('patientImport.step1.chooseFile')}
                     chooseOptions={{
                         icon: 'pi pi-upload',
                         className: selectedFile ? 'p-button-outlined p-button-success' : '',
@@ -217,7 +219,7 @@ const PatientImport: React.FC = () => {
                     <div className="flex align-items-center gap-2">
                         <span className="text-500 text-sm">
                             <i className="pi pi-file mr-1"></i>
-                            {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} Ko)
+                            {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                         </span>
                         <Button
                             icon="pi pi-trash"
@@ -227,7 +229,7 @@ const PatientImport: React.FC = () => {
                                 setUploadError(null);
                                 fileUploadRef.current?.clear();
                             }}
-                            tooltip="Supprimer le fichier"
+                            tooltip={t('patientImport.step1.removeFile')}
                             tooltipOptions={{ position: 'top' }}
                         />
                     </div>
@@ -248,28 +250,28 @@ const PatientImport: React.FC = () => {
                 <Message
                     severity="success"
                     className="w-full"
-                    text={`Les ${totalRows} lignes sont valides`}
+                    text={t('patientImport.step2.validRows', { count: totalRows })}
                 />
             ) : (
                 <>
                     <Message
                         severity="error"
                         className="w-full"
-                        text={`${validationErrors.length} erreur(s) de validation trouvée(s). Corrigez le fichier et réessayez.`}
+                        text={t('patientImport.step2.validationErrorsFound', { count: validationErrors.length })}
                     />
-                    <h3 className="m-0">Erreurs de validation</h3>
+                    <h3 className="m-0">{t('patientImport.step2.validationErrorsTitle')}</h3>
                     <DataTable
                         value={validationErrors}
                         paginator
                         rows={10}
                         rowsPerPageOptions={[10, 25, 50]}
-                        emptyMessage="Aucune erreur"
+                        emptyMessage={t('patientImport.step2.noErrors')}
                         className="shadow-2"
                         size="small"
                     >
-                        <Column field="row" header="Ligne" sortable style={{ width: '6rem' }} />
-                        <Column field="field" header="Champ" sortable />
-                        <Column field="message" header="Message" />
+                        <Column field="row" header={t('patientImport.step2.row')} sortable style={{ width: '6rem' }} />
+                        <Column field="field" header={t('patientImport.step2.field')} sortable />
+                        <Column field="message" header={t('patientImport.step2.message')} />
                     </DataTable>
                 </>
             )}
@@ -282,16 +284,16 @@ const PatientImport: React.FC = () => {
         <div className="flex flex-column align-items-center gap-4 p-6">
             <i className="pi pi-check-circle text-8xl text-green-500"></i>
             <h2 className="m-0 text-center">
-                {totalRows} patients prêts à importer
+                {t('patientImport.step3.readyToImport', { count: totalRows })}
             </h2>
             <p className="text-500 text-center m-0">
-                Cliquez sur "Importer" pour lancer l'import. Cette action est irréversible.
+                {t('patientImport.step3.warning')}
             </p>
 
             {importing && (
                 <div className="w-full">
                     <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
-                    <p className="text-center text-500 mt-2">Import en cours…</p>
+                    <p className="text-center text-500 mt-2">{t('patientImport.step3.importInProgress')}</p>
                 </div>
             )}
         </div>
@@ -312,7 +314,7 @@ const PatientImport: React.FC = () => {
                 <Accordion multiple>
                     {importResult.created > 0 && (
                         <AccordionTab
-                            header={`${importResult.created} patient(s) créé(s)`}
+                            header={t('patientImport.step4.createdCount', { count: importResult.created })}
                             pt={{
                                 headerAction: {
                                     className: 'bg-green-100'
@@ -322,7 +324,7 @@ const PatientImport: React.FC = () => {
                         >
                             {importResult.createdPatients.map((patient, idx) => (
                                 <p key={idx} className="m-0 mb-2">
-                                    Le patient <strong>{patient.fullName}</strong> est créé.
+                                    {t('patientImport.step4.patientCreated', { name: patient.fullName })}
                                 </p>
                             ))}
                         </AccordionTab>
@@ -330,7 +332,7 @@ const PatientImport: React.FC = () => {
 
                     {importResult.updated > 0 && (
                         <AccordionTab
-                            header={`${importResult.updated} patient(s) modifié(s)`}
+                            header={t('patientImport.step4.updatedCount', { count: importResult.updated })}
                             pt={{
                                 headerAction: {
                                     className: 'bg-orange-100'
@@ -367,7 +369,7 @@ const PatientImport: React.FC = () => {
                 <div>
                     {activeStep > 0 && activeStep < 3 && (
                         <Button
-                            label="Précédent"
+                            label={t('common.previous')}
                             icon="pi pi-arrow-left"
                             className="p-button-text"
                             onClick={goBack}
@@ -378,7 +380,7 @@ const PatientImport: React.FC = () => {
                 <div className="flex gap-2">
                     {activeStep < 3 && (
                         <Button
-                            label="Annuler"
+                            label={t('common.cancel')}
                             icon="pi pi-times"
                             className="p-button-text p-button-secondary"
                             onClick={() => navigate('/patients')}
@@ -387,7 +389,7 @@ const PatientImport: React.FC = () => {
                     )}
                     {activeStep === 0 && (
                         <Button
-                            label="Suivant"
+                            label={t('common.next')}
                             icon="pi pi-arrow-right"
                             iconPos="right"
                             onClick={handleValidate}
@@ -397,7 +399,7 @@ const PatientImport: React.FC = () => {
                     )}
                     {activeStep === 1 && (
                         <Button
-                            label="Suivant"
+                            label={t('common.next')}
                             icon="pi pi-arrow-right"
                             iconPos="right"
                             onClick={() => setActiveStep(2)}
@@ -406,7 +408,7 @@ const PatientImport: React.FC = () => {
                     )}
                     {activeStep === 2 && (
                         <Button
-                            label="Importer"
+                            label={t('patientImport.buttons.import')}
                             icon="pi pi-download"
                             className="p-button-success"
                             onClick={handleImport}
@@ -417,7 +419,7 @@ const PatientImport: React.FC = () => {
                     {activeStep === 3 && (
                         <>
                             <Button
-                                label="Nouvel import"
+                                label={t('patientImport.buttons.newImport')}
                                 icon="pi pi-upload"
                                 className="p-button-outlined"
                                 onClick={() => {
@@ -433,7 +435,7 @@ const PatientImport: React.FC = () => {
                                 }}
                             />
                             <Button
-                                label="Terminer"
+                                label={t('common.finish')}
                                 icon="pi pi-check"
                                 className="p-button-primary"
                                 onClick={() => navigate('/patients')}
@@ -452,9 +454,9 @@ const PatientImport: React.FC = () => {
             <Toast ref={toast} />
 
             <div className="flex justify-content-between align-items-center mb-4">
-                <h1 className="text-3xl font-bold m-0">Import de Patients</h1>
+                <h1 className="text-3xl font-bold m-0">{t('patientImport.title')}</h1>
                 <Button
-                    label="Retour à la liste"
+                    label={t('patientImport.backToList')}
                     icon="pi pi-arrow-left"
                     className="p-button-text"
                     onClick={() => navigate('/patients')}

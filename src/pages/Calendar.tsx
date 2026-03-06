@@ -18,23 +18,12 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Toast } from 'primereact/toast';
 import { AutoComplete } from 'primereact/autocomplete';
+import { useTranslation } from 'react-i18next';
 
-const STATUS_CONFIG: { key: string; label: string; color: string }[] = [
-  { key: 'SCHEDULED', label: 'Planifié', color: '#3498db' },
-  { key: 'CONFIRMED', label: 'Confirmé', color: '#2ecc71' },
-  { key: 'IN_PROGRESS', label: 'En cours', color: '#f39c12' },
-  { key: 'COMPLETED', label: 'Terminé', color: '#27ae60' },
-  { key: 'CANCELLED', label: 'Annulé', color: '#e74c3c' },
-];
-
-const HOLIDAY_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
-  National: { bg: '#e8f5e9', border: '#43a047', text: '#2e7d32', label: 'Fête nationale' },
-  Religious: { bg: '#f3e5f5', border: '#8e24aa', text: '#6a1b9a', label: 'Fête religieuse' },
-  Exceptional: { bg: '#fff3e0', border: '#fb8c00', text: '#e65100', label: 'Jour exceptionnel' },
-};
 
 const Calendar: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -47,6 +36,21 @@ const Calendar: React.FC = () => {
   const [doctors, setDoctors] = useState<User[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showHolidays, setShowHolidays] = useState(true);
+
+  const STATUS_CONFIG: { key: string; label: string; color: string }[] = useMemo(() => [
+    { key: 'SCHEDULED', label: t('status.scheduled'), color: '#3498db' },
+    { key: 'CONFIRMED', label: t('status.confirmed'), color: '#2ecc71' },
+    { key: 'IN_PROGRESS', label: t('status.inProgress'), color: '#f39c12' },
+    { key: 'COMPLETED', label: t('status.completed'), color: '#27ae60' },
+    { key: 'CANCELLED', label: t('status.cancelledM'), color: '#e74c3c' },
+  ], [t]);
+
+  const HOLIDAY_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = useMemo(() => ({
+    National: { bg: '#e8f5e9', border: '#43a047', text: '#2e7d32', label: t('calendar.holidays.national') },
+    Religious: { bg: '#f3e5f5', border: '#8e24aa', text: '#6a1b9a', label: t('calendar.holidays.religious') },
+    Exceptional: { bg: '#fff3e0', border: '#fb8c00', text: '#e65100', label: t('calendar.holidays.exceptional') },
+  }), [t]);
+
   const [activeFilters, setActiveFilters] = useState<Set<string>>(
     new Set(STATUS_CONFIG.map(s => s.key))
   );
@@ -77,7 +81,7 @@ const Calendar: React.FC = () => {
         extendedProps: { isHoliday: true, holidayType: h.holiday_type },
       };
     });
-  }, [holidays, showHolidays]);
+  }, [holidays, showHolidays, HOLIDAY_COLORS]);
 
   const filteredEvents = useMemo(() => {
     const filtered = events.filter(event => {
@@ -137,11 +141,11 @@ const Calendar: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les rendez-vous',
+        summary: t('common.error'),
+        detail: t('calendar.loadError'),
       });
     }
-  }, []);
+  }, [t]);
 
   const handleDatesSet = useCallback((dateInfo: any) => {
     loadEvents(dateInfo.start, dateInfo.end);
@@ -172,8 +176,8 @@ const Calendar: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les médecins',
+        summary: t('common.error'),
+        detail: t('calendar.loadDoctorsError'),
       });
     }
   };
@@ -215,8 +219,8 @@ const Calendar: React.FC = () => {
     if (!formData.patientId || !formData.doctorId || !formData.startAt || !formData.endAt) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Veuillez remplir tous les champs obligatoires',
+        summary: t('common.error'),
+        detail: t('calendar.requiredFields'),
       });
       return;
     }
@@ -227,15 +231,15 @@ const Calendar: React.FC = () => {
         await appointmentService.updateAppointment(editingAppointment.id, formData as any);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Rendez-vous mis à jour',
+          summary: t('common.success'),
+          detail: t('calendar.updated'),
         });
       } else {
         await appointmentService.createAppointment(formData as any);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Rendez-vous créé',
+          summary: t('common.success'),
+          detail: t('calendar.created'),
         });
       }
       setDialogVisible(false);
@@ -243,7 +247,7 @@ const Calendar: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('common.error'),
         detail: getApiErrorMessage(error),
       });
     } finally {
@@ -256,7 +260,7 @@ const Calendar: React.FC = () => {
       <div>
         {editingAppointment && (
           <Button
-            label="Supprimer"
+            label={t('common.delete')}
             icon="pi pi-trash"
             className="p-button-danger"
             onClick={() => { }}
@@ -265,13 +269,13 @@ const Calendar: React.FC = () => {
       </div>
       <div className="flex gap-2">
         <Button
-          label="Annuler"
+          label={t('common.cancel')}
           icon="pi pi-times"
           className="p-button-text"
           onClick={() => setDialogVisible(false)}
         />
         <Button
-          label={editingAppointment ? 'Modifier' : 'Créer'}
+          label={editingAppointment ? t('common.edit') : t('common.create')}
           icon="pi pi-check"
           loading={loading}
           onClick={handleSubmit}
@@ -285,16 +289,16 @@ const Calendar: React.FC = () => {
       <Toast ref={toast} />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Calendrier des Rendez-vous</h1>
+        <h1 className="text-3xl font-bold m-0">{t('calendar.title')}</h1>
         <div className="flex gap-2">
           <Button
-            label="Aujourd'hui"
+            label={t('calendar.today')}
             icon="pi pi-calendar"
             className="p-button-secondary"
             onClick={() => calendarRef.current?.getApi().today()}
           />
           <Button
-            label="Nouveau RDV"
+            label={t('calendar.newAppointment')}
             icon="pi pi-plus"
             className="p-button-success"
             onClick={() => {
@@ -335,7 +339,7 @@ const Calendar: React.FC = () => {
           onClick={() => setShowHolidays(!showHolidays)}
         >
           <i className="pi pi-calendar text-sm"></i>
-          <span className="text-sm font-medium">Jours fériés</span>
+          <span className="text-sm font-medium">{t('calendar.holidays.title')}</span>
         </div>
         {showHolidays && Object.entries(HOLIDAY_COLORS).map(([type, colors]) => (
           <div key={type} className="flex align-items-center gap-2 px-2 py-1">
@@ -366,14 +370,14 @@ const Calendar: React.FC = () => {
           select={handleDateSelect}
           eventClick={handleEventClick}
           height="auto"
-          locale="fr"
+          locale={t('calendar.locale')}
           buttonText={{
-            today: "Aujourd'hui",
-            month: 'Mois',
-            week: 'Semaine',
-            day: 'Jour',
+            today: t('calendar.today'),
+            month: t('calendar.month'),
+            week: t('calendar.week'),
+            day: t('calendar.day'),
           }}
-          allDayText="Toute la journée"
+          allDayText={t('calendar.allDay')}
           slotMinTime="08:00:00"
           slotMaxTime="19:00:00"
           slotDuration="00:30:00"
@@ -387,14 +391,14 @@ const Calendar: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingAppointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
+        header={editingAppointment ? t('calendar.editDialog') : t('calendar.newDialog')}
         className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="flex flex-column gap-3">
           <div className="grid">
             <div className="field col-12 md:col-6 field">
-              <label className="block font-medium mb-2">Patient *</label>
+              <label className="block font-medium mb-2">{t('calendar.form.patient')}</label>
               <AutoComplete
                 value={selectedPatient}
                 suggestions={patients}
@@ -404,86 +408,86 @@ const Calendar: React.FC = () => {
                   setSelectedPatient(e.value);
                   setFormData({ ...formData, patientId: e.value?.id });
                 }}
-                placeholder="Rechercher un patient..."
+                placeholder={t('calendar.form.searchPatient')}
                 className="w-full"
                 inputClassName="w-full"
               />
             </div>
 
             <div className="field col-12 md:col-6 field">
-              <label className="block font-medium mb-2">Médecin *</label>
+              <label className="block font-medium mb-2">{t('calendar.form.doctor')}</label>
               <Dropdown
                 value={formData.doctorId}
                 options={doctors}
                 optionLabel="fullName"
                 optionValue="id"
                 onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
-                placeholder="Sélectionner un médecin"
+                placeholder={t('calendar.form.selectDoctor')}
                 className="w-full"
               />
             </div>
           </div>
           <div className="grid">
             <div className="col-6 field">
-              <label className="block font-medium mb-2">Début *</label>
+              <label className="block font-medium mb-2">{t('calendar.form.start')}</label>
               <PrimeCalendar
                 value={formData.startAt}
                 onChange={(e) => setFormData({ ...formData, startAt: e.value || undefined })}
                 showTime
                 hourFormat="24"
                 className="w-full"
-                placeholder="Date et heure"
+                placeholder={t('calendar.form.dateTimePlaceholder')}
                 minDate={new Date()}
               />
             </div>
             <div className="col-6 field">
-              <label className="block font-medium mb-2">Fin *</label>
+              <label className="block font-medium mb-2">{t('calendar.form.end')}</label>
               <PrimeCalendar
                 value={formData.endAt}
                 onChange={(e) => setFormData({ ...formData, endAt: e.value || undefined })}
                 showTime
                 hourFormat="24"
                 className="w-full"
-                placeholder="Date et heure"
+                placeholder={t('calendar.form.dateTimePlaceholder')}
                 minDate={new Date()}
               />
             </div>
           </div>
 
           <div className="field">
-            <label className="block font-medium mb-2">Type</label>
+            <label className="block font-medium mb-2">{t('calendar.form.type')}</label>
             <Dropdown
               value={formData.type}
               options={[
-                { label: 'Consultation', value: 'CONSULTATION' },
-                { label: 'Suivi', value: 'FOLLOW_UP' },
-                { label: 'Examen', value: 'EXAMINATION' },
-                { label: 'Urgence', value: 'EMERGENCY' },
+                { label: t('appointments.types.consultation'), value: 'CONSULTATION' },
+                { label: t('appointments.types.follow_up'), value: 'FOLLOW_UP' },
+                { label: t('appointments.types.examination'), value: 'EXAMINATION' },
+                { label: t('appointments.types.emergency'), value: 'EMERGENCY' },
               ]}
               onChange={(e) => setFormData({ ...formData, type: e.value })}
-              placeholder="Sélectionner le type"
+              placeholder={t('calendar.form.selectType')}
               className="w-full"
             />
           </div>
 
           <div className="field">
-            <label className="block font-medium mb-2">Motif</label>
+            <label className="block font-medium mb-2">{t('calendar.form.reason')}</label>
             <InputText
               value={formData.reason || ''}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
               className="w-full"
-              placeholder="Motif du rendez-vous"
+              placeholder={t('calendar.form.reasonPlaceholder')}
             />
           </div>
 
           <div className="field">
-            <label className="block font-medium mb-2">Notes</label>
+            <label className="block font-medium mb-2">{t('calendar.form.notes')}</label>
             <InputTextarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full"
               rows={3}
-              placeholder="Notes additionnelles"
+              placeholder={t('calendar.form.notesPlaceholder')}
             />
           </div>
         </div>

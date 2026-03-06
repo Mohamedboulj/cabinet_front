@@ -195,6 +195,7 @@
             "confirm": "Confirm import"
         },
         "step1": {
+            "infoMessage": "Upload an Excel file containing patient data (.xlsx or .xls).",
             "downloadHint": "Download the Excel template to fill in your patient data.",
             "downloadTemplate": "Download template",
             "chooseFile": "Choose an Excel file",
