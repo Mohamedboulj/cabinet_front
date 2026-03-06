@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { consultationService } from '../services/consultationService';
 import { auditLogService } from '../services/auditLogService';
@@ -18,6 +19,7 @@ import ActivityHistory from '../components/ActivityHistory';
 const ConsultationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,8 +41,8 @@ const ConsultationDetail: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger la consultation',
+        summary: t('common.error'),
+        detail: t('consultationDetail.loadError'),
       });
     } finally {
       setLoading(false);
@@ -65,15 +67,15 @@ const ConsultationDetail: React.FC = () => {
       await consultationService.completeConsultation(consultation.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Consultation terminée',
+        summary: t('common.success'),
+        detail: t('consultationDetail.completed'),
       });
       loadConsultation(consultation.id);
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de terminer la consultation',
+        summary: t('common.error'),
+        detail: t('consultationDetail.completeError'),
       });
     }
   };
@@ -81,23 +83,23 @@ const ConsultationDetail: React.FC = () => {
   const handleCancel = () => {
     if (!consultation) return;
     confirmDialog({
-      message: 'Êtes-vous sûr de vouloir annuler cette consultation ?',
-      header: 'Confirmation',
+      message: t('consultationDetail.cancelConfirm'),
+      header: t('common.confirmation'),
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
           await consultationService.cancelConsultation(consultation.id);
           toast.current?.show({
             severity: 'success',
-            summary: 'Succès',
-            detail: 'Consultation annulée',
+            summary: t('common.success'),
+            detail: t('consultationDetail.cancelled'),
           });
           loadConsultation(consultation.id);
         } catch (error) {
           toast.current?.show({
             severity: 'error',
-            summary: 'Erreur',
-            detail: "Impossible d'annuler la consultation",
+            summary: t('common.error'),
+            detail: t('consultationDetail.cancelError'),
           });
         }
       },
@@ -107,23 +109,23 @@ const ConsultationDetail: React.FC = () => {
   const handleDelete = () => {
     if (!consultation) return;
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer la consultation #${consultation.id} ?`,
-      header: 'Confirmation de suppression',
+      message: t('consultationDetail.deleteConfirm', { id: consultation.id }),
+      header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
           await consultationService.deleteConsultation(consultation.id);
           toast.current?.show({
             severity: 'success',
-            summary: 'Succès',
-            detail: 'Consultation supprimée',
+            summary: t('common.success'),
+            detail: t('consultationDetail.deleted'),
           });
           navigate('/consultations');
         } catch (error: any) {
           toast.current?.show({
             severity: 'error',
-            summary: 'Erreur',
-            detail: getApiErrorMessage(error, 'Impossible de supprimer la consultation'),
+            summary: t('common.error'),
+            detail: getApiErrorMessage(error, t('consultationDetail.deleteError')),
           });
         }
       },
@@ -132,9 +134,9 @@ const ConsultationDetail: React.FC = () => {
 
   const getStatusTag = (status: string) => {
     const statusMap: Record<string, { label: string; severity: 'success' | 'warning' | 'danger' }> = {
-      'IN_PROGRESS': { label: 'En cours', severity: 'warning' },
-      'COMPLETED': { label: 'Terminée', severity: 'success' },
-      'CANCELLED': { label: 'Annulée', severity: 'danger' },
+      'IN_PROGRESS': { label: t('status.inProgress'), severity: 'warning' },
+      'COMPLETED': { label: t('status.completedF'), severity: 'success' },
+      'CANCELLED': { label: t('status.cancelledF'), severity: 'danger' },
     };
     const s = statusMap[status] || { label: status, severity: 'warning' };
     return <Tag value={s.label} severity={s.severity} />;
@@ -148,8 +150,8 @@ const ConsultationDetail: React.FC = () => {
     return (
       <div className="flex flex-column align-items-center justify-content-center" style={{ minHeight: '400px' }}>
         <i className="pi pi-exclamation-circle text-4xl text-orange-500 mb-3"></i>
-        <h2>Consultation introuvable</h2>
-        <Button label="Retour aux consultations" icon="pi pi-arrow-left" onClick={() => navigate('/consultations')} />
+        <h2>{t('consultationDetail.notFound')}</h2>
+        <Button label={t('consultationDetail.backToList')} icon="pi pi-arrow-left" onClick={() => navigate('/consultations')} />
       </div>
     );
   }
@@ -163,7 +165,7 @@ const ConsultationDetail: React.FC = () => {
       <div className="flex justify-content-between align-items-start mb-4">
         <div>
           <Button
-            label="Retour"
+            label={t('common.back')}
             icon="pi pi-arrow-left"
             className="p-button-text mb-2"
             onClick={() => navigate('/consultations')}
@@ -172,9 +174,9 @@ const ConsultationDetail: React.FC = () => {
           <div className="flex gap-2 mt-2">
             {getStatusTag(consultation.status)}
             {consultation.isPaid ? (
-              <Tag icon="pi pi-check" value="Payée" severity="success" />
+              <Tag icon="pi pi-check" value={t('consultationDetail.paid')} severity="success" />
             ) : (
-              <Tag icon="pi pi-times" value="Non payée" severity="danger" />
+              <Tag icon="pi pi-times" value={t('consultationDetail.unpaid')} severity="danger" />
             )}
           </div>
         </div>
@@ -182,13 +184,13 @@ const ConsultationDetail: React.FC = () => {
           {consultation.status === 'IN_PROGRESS' && (
             <>
               <Button
-                label="Terminer"
+                label={t('common.complete')}
                 icon="pi pi-check-circle"
                 className="p-button-success"
                 onClick={handleComplete}
               />
               <Button
-                label="Annuler"
+                label={t('common.cancel')}
                 icon="pi pi-times-circle"
                 className="p-button-secondary"
                 onClick={handleCancel}
@@ -196,13 +198,13 @@ const ConsultationDetail: React.FC = () => {
             </>
           )}
           <Button
-            label="Supprimer"
+            label={t('common.delete')}
             icon="pi pi-trash"
             className="p-button-danger"
             onClick={handleDelete}
           />
           <Button
-            label="Imprimer"
+            label={t('common.print')}
             icon="pi pi-print"
             className="p-button-secondary"
           />
@@ -212,18 +214,18 @@ const ConsultationDetail: React.FC = () => {
       {/* Patient & Doctor Info */}
       <div className="grid mb-4">
         <div className="col-12 md:col-6">
-          <Card className="shadow-2" title="Patient">
+          <Card className="shadow-2" title={t('consultationDetail.cards.patient')}>
             <div className="flex flex-column gap-2">
-              <div><strong>Nom:</strong> {consultation.patient?.fullName || `${consultation.patient?.firstName} ${consultation.patient?.lastName}`}</div>
-              <div><strong>Téléphone:</strong> {consultation.patient?.phone}</div>
+              <div><strong>{t('consultationDetail.cards.name')}:</strong> {consultation.patient?.fullName || `${consultation.patient?.firstName} ${consultation.patient?.lastName}`}</div>
+              <div><strong>{t('consultationDetail.cards.phone')}:</strong> {consultation.patient?.phone}</div>
             </div>
           </Card>
         </div>
         <div className="col-12 md:col-6">
-          <Card className="shadow-2" title="Médecin">
+          <Card className="shadow-2" title={t('consultationDetail.cards.doctor')}>
             <div className="flex flex-column gap-2">
-              <div><strong>Nom:</strong> {consultation.doctor?.fullName || `${consultation.doctor?.firstName} ${consultation.doctor?.lastName}`}</div>
-              <div><strong>Date:</strong> {new Date(consultation.createdAt).toLocaleString('fr-FR')}</div>
+              <div><strong>{t('consultationDetail.cards.name')}:</strong> {consultation.doctor?.fullName || `${consultation.doctor?.firstName} ${consultation.doctor?.lastName}`}</div>
+              <div><strong>{t('consultationDetail.cards.date')}:</strong> {new Date(consultation.createdAt).toLocaleString('fr-FR')}</div>
             </div>
           </Card>
         </div>
@@ -231,28 +233,28 @@ const ConsultationDetail: React.FC = () => {
 
       {/* Tabs */}
       <TabView>
-        <TabPanel header="Consultation" leftIcon="pi pi-file-edit mr-2">
+        <TabPanel header={t('consultationDetail.tabs.consultation')} leftIcon="pi pi-file-edit mr-2">
           <div className="grid">
             <div className="col-12 md:col-6">
-              <Card className="shadow-2 mb-3" title="Motif">
+              <Card className="shadow-2 mb-3" title={t('consultationDetail.cards.reason')}>
                 <p>{consultation.reason || '-'}</p>
               </Card>
-              <Card className="shadow-2 mb-3" title="Anamnèse">
+              <Card className="shadow-2 mb-3" title={t('consultationDetail.cards.anamnesis')}>
                 <p>{consultation.anamnesis || '-'}</p>
               </Card>
-              <Card className="shadow-2" title="Examen clinique">
+              <Card className="shadow-2" title={t('consultationDetail.cards.examination')}>
                 <p>{consultation.examination || '-'}</p>
               </Card>
             </div>
             <div className="col-12 md:col-6">
-              <Card className="shadow-2 mb-3" title="Diagnostic">
+              <Card className="shadow-2 mb-3" title={t('consultationDetail.cards.diagnosis')}>
                 <p>{consultation.diagnosis || '-'}</p>
               </Card>
-              <Card className="shadow-2 mb-3" title="Recommandations">
+              <Card className="shadow-2 mb-3" title={t('consultationDetail.cards.recommendations')}>
                 <p>{consultation.recommendations || '-'}</p>
               </Card>
               {consultation.notes && (
-                <Card className="shadow-2" title="Notes">
+                <Card className="shadow-2" title={t('consultationDetail.cards.notes')}>
                   <p>{consultation.notes}</p>
                 </Card>
               )}
@@ -260,48 +262,48 @@ const ConsultationDetail: React.FC = () => {
           </div>
         </TabPanel>
 
-        <TabPanel header="Signes vitaux" leftIcon="pi pi-heart mr-2">
+        <TabPanel header={t('consultationDetail.tabs.vitalSigns')} leftIcon="pi pi-heart mr-2">
           <Card className="shadow-2">
             <div className="grid">
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-heart text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Tension artérielle</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.bloodPressure')}</div>
                   <div className="font-bold text-lg">{consultation.bloodPressure || '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-chart-line text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Poids</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.weight')}</div>
                   <div className="font-bold text-lg">{consultation.weight ? `${consultation.weight} kg` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-sun text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Température</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.temperature')}</div>
                   <div className="font-bold text-lg">{consultation.temperature ? `${consultation.temperature}°C` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-clock text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Fréquence cardiaque</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.heartRate')}</div>
                   <div className="font-bold text-lg">{consultation.heartRate ? `${consultation.heartRate} bpm` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3 mt-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-wave-pulse text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Fréq. respiratoire</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.respiratoryRate')}</div>
                   <div className="font-bold text-lg">{consultation.respiratoryRate ? `${consultation.respiratoryRate}/min` : '-'}</div>
                 </div>
               </div>
               <div className="col-6 md:col-3 mt-3">
                 <div className="text-center p-3 surface-100 border-round">
                   <i className="pi pi-percentage text-primary text-2xl mb-2"></i>
-                  <div className="text-500 text-sm">Saturation O₂</div>
+                  <div className="text-500 text-sm">{t('consultationDetail.vitals.oxygenSaturation')}</div>
                   <div className="font-bold text-lg">{consultation.oxygenSaturation ? `${consultation.oxygenSaturation}%` : '-'}</div>
                 </div>
               </div>
@@ -309,30 +311,30 @@ const ConsultationDetail: React.FC = () => {
           </Card>
         </TabPanel>
 
-        <TabPanel header="Ordonnances" leftIcon="pi pi-file mr-2">
+        <TabPanel header={t('consultationDetail.tabs.prescriptions')} leftIcon="pi pi-file mr-2">
           <Card className="shadow-2">
-            <DataTable value={consultation.prescriptions || []} emptyMessage="Aucune ordonnance">
-              <Column field="medicationName" header="Médicament" />
-              <Column field="dosage" header="Dosage" />
-              <Column field="frequency" header="Fréquence" />
-              <Column field="duration" header="Durée" />
-              <Column field="instructions" header="Instructions" />
+            <DataTable value={consultation.prescriptions || []} emptyMessage={t('consultationDetail.prescriptionTable.noPrescriptions')}>
+              <Column field="medicationName" header={t('consultationDetail.prescriptionTable.medication')} />
+              <Column field="dosage" header={t('consultationDetail.prescriptionTable.dosage')} />
+              <Column field="frequency" header={t('consultationDetail.prescriptionTable.frequency')} />
+              <Column field="duration" header={t('consultationDetail.prescriptionTable.duration')} />
+              <Column field="instructions" header={t('consultationDetail.prescriptionTable.instructions')} />
               <Column
                 body={() => (
                   <Button
                     icon="pi pi-print"
                     className="p-button-rounded p-button-secondary p-button-sm"
-                    tooltip="Imprimer"
+                    tooltip={t('common.print')}
                   />
                 )}
-                header="Actions"
+                header={t('common.actions')}
                 style={{ width: '6rem' }}
               />
             </DataTable>
           </Card>
         </TabPanel>
 
-        <TabPanel header="Historique des activités" leftIcon="pi pi-history mr-2">
+        <TabPanel header={t('consultationDetail.tabs.activityHistory')} leftIcon="pi pi-history mr-2">
           <ActivityHistory logs={auditLogs} loading={auditLoading} />
         </TabPanel>
       </TabView>

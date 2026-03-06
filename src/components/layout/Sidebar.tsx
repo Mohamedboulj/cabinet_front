@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { PanelMenu } from 'primereact/panelmenu';
 import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
@@ -10,10 +11,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
+  const { t } = useTranslation();
+
   const getMenuItems = () => {
     const items = [
       {
-        label: 'Tableau de bord',
+        label: t('sidebar.dashboard'),
         icon: 'pi pi-home',
         template: (item: any, options: any) => (
           <NavLink
@@ -29,11 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ),
       },
       {
-        label: 'Patients',
+        label: t('sidebar.patients'),
         icon: 'pi pi-users',
         items: [
           {
-            label: 'Liste des patients',
+            label: t('sidebar.patientList'),
             icon: 'pi pi-list',
             template: (item: any, options: any) => (
               <NavLink
@@ -49,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
             ),
           },
           {
-            label: 'Import',
+            label: t('sidebar.import'),
             icon: 'pi pi-upload',
             template: (item: any, options: any) => (
               <NavLink
@@ -67,11 +70,11 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ],
       },
       {
-        label: 'Rendez-vous',
+        label: t('sidebar.appointments'),
         icon: 'pi pi-calendar',
         items: [
           {
-            label: 'Liste',
+            label: t('sidebar.list'),
             icon: 'pi pi-list',
             template: (item: any, options: any) => (
               <NavLink
@@ -87,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
             ),
           },
           {
-            label: 'Calendrier',
+            label: t('sidebar.calendar'),
             icon: 'pi pi-calendar-plus',
             template: (item: any, options: any) => (
               <NavLink
@@ -105,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ],
       },
       {
-        label: 'Consultations',
+        label: t('sidebar.consultations'),
         icon: 'pi pi-heart',
         template: (item: any, options: any) => (
           <NavLink
@@ -121,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ),
       },
       {
-        label: 'Ordonnances',
+        label: t('sidebar.prescriptions'),
         icon: 'pi pi-file-edit',
         template: (item: any, options: any) => (
           <NavLink
@@ -137,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ),
       },
       {
-        label: 'Facturation',
+        label: t('sidebar.invoices'),
         icon: 'pi pi-money-bill',
         template: (item: any, options: any) => (
           <NavLink
@@ -156,7 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
 
     if (user?.roles.includes('ROLE_ADMIN')) {
       items.push({
-        label: 'Utilisateurs',
+        label: t('sidebar.users'),
         icon: 'pi pi-cog',
         template: (item: any, options: any) => (
           <NavLink
@@ -174,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
     }
 
     items.push({
-      label: 'Paramètres',
+      label: t('sidebar.settings'),
       icon: 'pi pi-cog',
       template: (item: any, options: any) => (
         <NavLink

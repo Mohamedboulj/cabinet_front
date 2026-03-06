@@ -19,6 +19,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { useTranslation } from 'react-i18next';
 
 interface InvoiceItemForm {
   description: string;
@@ -30,6 +31,7 @@ const emptyItem: InvoiceItemForm = { description: '', quantity: 1, unitPrice: '0
 
 const Invoices: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [, setPatients] = useState<Patient[]>([]);
@@ -56,8 +58,8 @@ const Invoices: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les factures',
+        summary: t('common.error'),
+        detail: t('invoices.loadError'),
       });
     } finally {
       setLoading(false);
@@ -95,8 +97,8 @@ const Invoices: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Erreur lors de la recherche',
+        summary: t('common.error'),
+        detail: t('invoices.searchError'),
       });
     } finally {
       setLoading(false);
@@ -149,15 +151,15 @@ const Invoices: React.FC = () => {
         await invoiceService.updateInvoice(editingInvoice.id, payload);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Facture mise à jour',
+          summary: t('common.success'),
+          detail: t('invoices.updated'),
         });
       } else {
         await invoiceService.createInvoice(payload);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Facture créée',
+          summary: t('common.success'),
+          detail: t('invoices.created'),
         });
       }
       setDialogVisible(false);
@@ -165,7 +167,7 @@ const Invoices: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('common.error'),
         detail: getApiErrorMessage(error),
       });
     } finally {
@@ -175,8 +177,8 @@ const Invoices: React.FC = () => {
 
   const confirmDelete = (invoice: Invoice) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer la facture ${invoice.invoiceNumber} ?`,
-      header: 'Confirmation de suppression',
+      message: t('invoices.confirmDeleteMessage', { number: invoice.invoiceNumber }),
+      header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(invoice),
     });
@@ -187,15 +189,15 @@ const Invoices: React.FC = () => {
       await invoiceService.deleteInvoice(invoice.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Facture supprimée',
+        summary: t('common.success'),
+        detail: t('invoices.deleted'),
       });
       loadInvoices();
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, 'Impossible de supprimer la facture'),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('invoices.deleteError')),
       });
     }
   };
@@ -226,12 +228,12 @@ const Invoices: React.FC = () => {
   // Body templates
   const statusBodyTemplate = (rowData: Invoice) => {
     const statusMap: Record<string, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' }> = {
-      'PAID': { label: 'Payée', severity: 'success' },
-      'PENDING': { label: 'En attente', severity: 'warning' },
-      'PARTIAL': { label: 'Partielle', severity: 'info' },
-      'OVERDUE': { label: 'En retard', severity: 'danger' },
-      'CANCELLED': { label: 'Annulée', severity: 'danger' },
-      'DRAFT': { label: 'Brouillon', severity: 'info' },
+      'PAID': { label: t('status.paid'), severity: 'success' },
+      'PENDING': { label: t('status.pending'), severity: 'warning' },
+      'PARTIAL': { label: t('status.partial'), severity: 'info' },
+      'OVERDUE': { label: t('status.overdue'), severity: 'danger' },
+      'CANCELLED': { label: t('status.cancelledF'), severity: 'danger' },
+      'DRAFT': { label: t('status.draft'), severity: 'info' },
     };
     const status = statusMap[rowData.status] || { label: rowData.status, severity: 'info' };
     return <Tag value={status.label} severity={status.severity} />;
@@ -263,24 +265,24 @@ const Invoices: React.FC = () => {
         icon="pi pi-eye"
         className="p-button-rounded p-button-info p-button-sm"
         onClick={() => navigate(`/invoices/${rowData.id}`)}
-        tooltip="Voir"
+        tooltip={t('common.view')}
       />
       <Button
         icon="pi pi-pencil"
         className="p-button-rounded p-button-warning p-button-sm"
         onClick={() => openEditDialog(rowData)}
-        tooltip="Modifier"
+        tooltip={t('common.edit')}
       />
       <Button
         icon="pi pi-trash"
         className="p-button-rounded p-button-danger p-button-sm"
         onClick={() => confirmDelete(rowData)}
-        tooltip="Supprimer"
+        tooltip={t('common.delete')}
       />
       <Button
         icon="pi pi-print"
         className="p-button-rounded p-button-secondary p-button-sm"
-        tooltip="Imprimer"
+        tooltip={t('common.print')}
         onClick={() => window.open(`/invoices/${rowData.id}`, '_blank')}
       />
     </div>
@@ -290,13 +292,13 @@ const Invoices: React.FC = () => {
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
       <Button
-        label="Annuler"
+        label={t('common.cancel')}
         icon="pi pi-times"
         className="p-button-text"
         onClick={() => setDialogVisible(false)}
       />
       <Button
-        label={editingInvoice ? 'Modifier' : 'Créer'}
+        label={editingInvoice ? t('common.edit') : t('common.create')}
         icon="pi pi-check"
         loading={submitting}
         onClick={handleSubmit}
@@ -310,9 +312,9 @@ const Invoices: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Factures</h1>
+        <h1 className="text-3xl font-bold m-0">{t('invoices.title')}</h1>
         <Button
-          label="Nouvelle facture"
+          label={t('invoices.newInvoice')}
           icon="pi pi-plus"
           className="p-button-success"
           onClick={openNewDialog}
@@ -326,7 +328,7 @@ const Invoices: React.FC = () => {
           <InputText
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une facture..."
+            placeholder={t('invoices.searchPlaceholder')}
             className="w-full"
             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -337,23 +339,23 @@ const Invoices: React.FC = () => {
 
       {/* Invoices Table */}
       {loading ? (
-        <DataTableSkeleton headers={['N° Facture', 'Patient', 'Date', 'Montant', 'Solde', 'Statut', 'Actions']} />
+        <DataTableSkeleton headers={[t('invoices.headers.number'), t('invoices.headers.patient'), t('invoices.headers.date'), t('invoices.headers.amount'), t('invoices.headers.balance'), t('invoices.headers.status'), t('invoices.headers.actions')]} />
       ) : (
         <DataTable
           value={invoices}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucune facture trouvée"
+          emptyMessage={t('invoices.noInvoices')}
           className="shadow-2"
         >
-          <Column field="invoiceNumber" header="N° Facture" sortable />
-          <Column field="patient.fullName" header="Patient" sortable body={patientFullName} />
-          <Column field="invoiceDate" header="Date" body={dateBodyTemplate} sortable />
-          <Column field="totalAmount" header="Montant" body={amountBodyTemplate} sortable />
-          <Column field="balance" header="Solde" body={balanceBodyTemplate} />
-          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header="Actions" style={{ width: '12rem' }} />
+          <Column field="invoiceNumber" header={t('invoices.headers.number')} sortable />
+          <Column field="patient.fullName" header={t('invoices.headers.patient')} sortable body={patientFullName} />
+          <Column field="invoiceDate" header={t('invoices.headers.date')} body={dateBodyTemplate} sortable />
+          <Column field="totalAmount" header={t('invoices.headers.amount')} body={amountBodyTemplate} sortable />
+          <Column field="balance" header={t('invoices.headers.balance')} body={balanceBodyTemplate} />
+          <Column field="status" header={t('invoices.headers.status')} body={statusBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header={t('invoices.headers.actions')} style={{ width: '12rem' }} />
         </DataTable>
       )}
 
@@ -361,81 +363,66 @@ const Invoices: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingInvoice ? 'Modifier la facture' : 'Nouvelle facture'}
+        header={editingInvoice ? t('invoices.editDialog') : t('invoices.newDialog')}
         className="w-11/12 md:w-8 lg:w-8"
         footer={dialogFooter}
       >
         <div className="grid">
-          {/* Patient */}
-          {/*<div className="col-12 md:col-6 field">*/}
-          {/*  <label className="block font-medium mb-2">Patient *</label>*/}
-          {/*  <Dropdown*/}
-          {/*    value={formData.patientId}*/}
-          {/*    options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}*/}
-          {/*    onChange={(e) => setFormData({ ...formData, patientId: e.value })}*/}
-          {/*    placeholder="Sélectionner un patient"*/}
-          {/*    className="w-full"*/}
-          {/*    filter*/}
-          {/*    filterPlaceholder="Rechercher..."*/}
-          {/*    disabled={!!editingInvoice}*/}
-          {/*  />*/}
-          {/*</div>*/}
-
           {/* Consultation */}
           <div className="col-12 md:col-8 field">
-            <label className="block font-medium mb-2">Consultation</label>
+            <label className="block font-medium mb-2">{t('invoices.form.consultation')}</label>
             <Dropdown
               value={formData.consultationId}
               options={consultations}
               optionLabel="reason"
               optionValue="id"
               onChange={(e) => setFormData({ ...formData, consultationId: e.value })}
-              placeholder="Sélectionner une consultation"
+              placeholder={t('invoices.form.selectConsultation')}
               className="w-full"
               filter
-              filterPlaceholder="Rechercher..."
+              filterPlaceholder={t('common.searchPlaceholder')}
               showClear
               itemTemplate={(option: Consultation) => {
                 const patient = option.patient;
                 const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
                 const date = new Date(option.createdAt).toLocaleDateString('fr-FR');
-                return <span>{option.referenceNumber} — {patientName} — {option.reason || 'Sans motif'} ({date})</span>;
+                return <span>{option.referenceNumber} — {patientName} — {option.reason || t('invoices.form.noReason')} ({date})</span>;
               }}
               valueTemplate={(value: any) => {
-                if (!value) return <span>Sélectionner une consultation</span>;
+                if (!value) return <span>{t('invoices.form.selectConsultation')}</span>;
                 const consultation = typeof value === 'object'
                   ? value as Consultation
                   : consultations.find((c: Consultation) => c.id === value);
                 if (!consultation) return <span>Consultation #{value}</span>;
                 const patient = consultation.patient;
                 const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
-                return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || 'Sans motif'}</span>;
+                return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || t('invoices.form.noReason')}</span>;
               }}
             />
           </div>
 
           {/* Status */}
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Statut</label>
+            <label className="block font-medium mb-2">{t('invoices.form.status')}</label>
             <Dropdown
               value={formData.status}
               options={[
-                { label: 'Brouillon', value: 'DRAFT' },
-                { label: 'En attente', value: 'PENDING' },
-                { label: 'Payée', value: 'PAID' },
-                { label: 'Partielle', value: 'PARTIAL' },
-                { label: 'En retard', value: 'OVERDUE' },
-                { label: 'Annulée', value: 'CANCELLED' },
+                { label: t('status.draft'), value: 'DRAFT' },
+                { label: t('status.pending'), value: 'PENDING' },
+                { label: t('status.paid'), value: 'PAID' },
+                { label: t('status.partial'), value: 'PARTIAL' },
+                { label: t('status.overdue'), value: 'OVERDUE' },
+                { label: t('status.cancelledF'), value: 'CANCELLED' },
               ]}
               onChange={(e) => setFormData({ ...formData, status: e.value })}
-              placeholder="Sélectionner"
+              placeholder={t('common.select')}
               className="w-full"
             />
           </div>
 
           {/* Invoice Date */}
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Date de facture *</label>
+            <label className="block font-medium mb-2">{t('invoices.form.invoiceDate')}</label>
             <Calendar
               value={formData.invoiceDate ? new Date(formData.invoiceDate) : null}
               onChange={(e) => setFormData({ ...formData, invoiceDate: e.value?.toISOString().split('T')[0] })}
@@ -448,7 +435,7 @@ const Invoices: React.FC = () => {
 
           {/* Due Date */}
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Date d'échéance</label>
+            <label className="block font-medium mb-2">{t('invoices.form.dueDate')}</label>
             <Calendar
               value={formData.dueDate ? new Date(formData.dueDate) : null}
               onChange={(e) => setFormData({ ...formData, dueDate: e.value?.toISOString().split('T')[0] })}
@@ -461,7 +448,7 @@ const Invoices: React.FC = () => {
 
           {/* Discount */}
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Remise ({getCurrency()})</label>
+            <label className="block font-medium mb-2">{t('invoices.form.discount', { currency: getCurrency() })}</label>
             <InputText
               value={formData.discountAmount || '0'}
               onChange={(e) => setFormData({ ...formData, discountAmount: e.target.value })}
@@ -472,7 +459,7 @@ const Invoices: React.FC = () => {
 
           {/* Notes */}
           <div className="col-12 md:col-12 field">
-            <label className="block font-medium mb-2">Notes</label>
+            <label className="block font-medium mb-2">{t('invoices.form.notes')}</label>
             <InputTextarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -485,9 +472,9 @@ const Invoices: React.FC = () => {
           {/* Line Items */}
           <div className="col-12">
             <div className="flex justify-content-between align-items-center mb-3 mt-2">
-              <h3 className="text-lg font-semibold m-0">Lignes de facture</h3>
+              <h3 className="text-lg font-semibold m-0">{t('invoices.form.lineItems')}</h3>
               <Button
-                label="Ajouter une ligne"
+                label={t('invoices.form.addLine')}
                 icon="pi pi-plus"
                 className="p-button-outlined p-button-sm"
                 onClick={addItem}
@@ -497,16 +484,16 @@ const Invoices: React.FC = () => {
             {items.map((item, index) => (
               <div key={index} className="grid align-items-end mb-2">
                 <div className="col-12 md:col-5 field mb-0">
-                  {index === 0 && <label className="block font-medium mb-2">Description</label>}
+                  {index === 0 && <label className="block font-medium mb-2">{t('invoices.form.description')}</label>}
                   <InputText
                     value={item.description}
                     onChange={(e) => updateItem(index, 'description', e.target.value)}
                     className="w-full"
-                    placeholder="Description de l'article"
+                    placeholder={t('invoices.form.descriptionPlaceholder')}
                   />
                 </div>
                 <div className="col-4 md:col-2 field mb-0">
-                  {index === 0 && <label className="block font-medium mb-2">Quantité</label>}
+                  {index === 0 && <label className="block font-medium mb-2">{t('invoices.form.quantity')}</label>}
                   <InputNumber
                     value={item.quantity}
                     onValueChange={(e) => updateItem(index, 'quantity', e.value || 1)}
@@ -515,7 +502,7 @@ const Invoices: React.FC = () => {
                   />
                 </div>
                 <div className="col-4 md:col-2 field mb-0">
-                  {index === 0 && <label className="block font-medium mb-2">Prix unit.</label>}
+                  {index === 0 && <label className="block font-medium mb-2">{t('invoices.form.unitPrice')}</label>}
                   <InputText
                     value={item.unitPrice}
                     onChange={(e) => updateItem(index, 'unitPrice', e.target.value)}
@@ -524,7 +511,7 @@ const Invoices: React.FC = () => {
                   />
                 </div>
                 <div className="col-3 md:col-2 field mb-0">
-                  {index === 0 && <label className="block font-medium mb-2">Total</label>}
+                  {index === 0 && <label className="block font-medium mb-2">{t('invoices.form.total')}</label>}
                   <InputText
                     value={(item.quantity * parseFloat(item.unitPrice || '0')).toFixed(2)}
                     className="w-full"
@@ -546,15 +533,15 @@ const Invoices: React.FC = () => {
             <div className="flex justify-content-end mt-3">
               <div className="w-15rem">
                 <div className="flex justify-content-between mb-2">
-                  <span>Sous-total:</span>
+                  <span>{t('invoices.form.subtotal')}</span>
                   <span className="font-semibold">{calculateSubtotal().toFixed(2)} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between mb-2">
-                  <span>Remise:</span>
+                  <span>{t('invoices.form.discountLabel')}</span>
                   <span className="text-orange-500">-{parseFloat(formData.discountAmount || '0').toFixed(2)} {getCurrency()}</span>
                 </div>
                 <div className="flex justify-content-between text-lg font-bold border-top-1 surface-border pt-2">
-                  <span>Total:</span>
+                  <span>{t('invoices.form.totalLabel')}</span>
                   <span>{(calculateSubtotal() - parseFloat(formData.discountAmount || '0')).toFixed(2)} {getCurrency()}</span>
                 </div>
               </div>

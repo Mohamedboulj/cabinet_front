@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
@@ -9,6 +10,7 @@ import { classNames } from 'primereact/utils';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +31,7 @@ const Login: React.FC = () => {
     try {
       await login({ email, password });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Email ou mot de passe incorrect');
+      setError(err.response?.data?.message || t('login.errorDefault'));
     } finally {
       setLoading(false);
     }
@@ -43,16 +45,16 @@ const Login: React.FC = () => {
             <i className="pi pi-heart-fill text-primary text-5xl mr-3"></i>
             <h1 className="text-4xl font-bold text-primary m-0">MediCare Pro</h1>
           </div>
-          <p className="text-600 text-lg">Système de Gestion Médicale</p>
+          <p className="text-600 text-lg">{t('login.subtitle')}</p>
         </div>
 
         <Card className="shadow-8 p-6 border-round-3xl md:w-30rem m-auto">
-          <h2 className="text-2xl font-semibold text-center mb-4">Connexion</h2>
+          <h2 className="text-2xl font-semibold text-center mb-4">{t('login.title')}</h2>
 
           {error && (
-            <Message 
-              severity="error" 
-              text={error} 
+            <Message
+              severity="error"
+              text={error}
               className="w-full mb-3"
             />
           )}
@@ -60,7 +62,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="flex flex-column gap-3">
             <div className="field">
               <label htmlFor="email" className="block text-900 font-medium mb-2">
-                Email
+                {t('login.emailLabel')}
               </label>
               <span className="p-input-icon-left w-full">
                 <InputText
@@ -68,37 +70,37 @@ const Login: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
+                  placeholder={t('login.emailPlaceholder')}
                   className={classNames('w-full', { 'p-invalid': submitted && !email })}
                 />
               </span>
               {submitted && !email && (
-                <small className="p-error block mt-1">L'email est requis</small>
+                <small className="p-error block mt-1">{t('login.emailRequired')}</small>
               )}
             </div>
 
             <div className="field p-fluid">
               <label htmlFor="password" className="block text-900 font-medium mb-2">
-                Mot de passe
+                {t('login.passwordLabel')}
               </label>
               <Password
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Votre mot de passe"
+                placeholder={t('login.passwordPlaceholder')}
                 toggleMask
                 feedback={false}
                 className={classNames('w-full', { 'p-invalid': submitted && !password })}
                 inputClassName="w-full"
               />
               {submitted && !password && (
-                <small className="p-error block mt-1">Le mot de passe est requis</small>
+                <small className="p-error block mt-1">{t('login.passwordRequired')}</small>
               )}
             </div>
 
             <Button
               type="submit"
-              label="Se connecter"
+              label={t('login.submit')}
               icon="pi pi-sign-in"
               loading={loading}
               className="w-full mt-2"
@@ -107,13 +109,13 @@ const Login: React.FC = () => {
 
           <div className="text-center mt-4">
             <a href="#" className="text-primary hover:underline text-sm">
-              Mot de passe oublié ?
+              {t('login.forgotPassword')}
             </a>
           </div>
         </Card>
 
         <div className="text-center mt-4 text-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} MediCare Pro. Tous droits réservés.</p>
+          <p>{t('login.copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </div>

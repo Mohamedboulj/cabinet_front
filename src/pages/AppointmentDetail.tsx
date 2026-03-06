@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { appointmentService } from '../services/appointmentService';
 import { auditLogService } from '../services/auditLogService';
@@ -24,6 +25,7 @@ const AppointmentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const toast = useRef<Toast>(null);
+    const { t } = useTranslation();
     const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [loading, setLoading] = useState(true);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -51,8 +53,8 @@ const AppointmentDetail: React.FC = () => {
         } catch {
             toast.current?.show({
                 severity: 'error',
-                summary: 'Erreur',
-                detail: 'Impossible de charger le rendez-vous',
+                summary: t('common.error'),
+                detail: t('appointmentDetail.loadError'),
             });
         } finally {
             setLoading(false);
@@ -107,8 +109,8 @@ const AppointmentDetail: React.FC = () => {
             await appointmentService.updateAppointment(appointment.id, editData);
             toast.current?.show({
                 severity: 'success',
-                summary: 'Succès',
-                detail: 'Rendez-vous mis à jour',
+                summary: t('common.success'),
+                detail: t('appointmentDetail.updated'),
             });
             setEditVisible(false);
             loadAppointment(appointment.id);
@@ -116,8 +118,8 @@ const AppointmentDetail: React.FC = () => {
         } catch (error) {
             toast.current?.show({
                 severity: 'error',
-                summary: 'Erreur',
-                detail: getApiErrorMessage(error, 'Impossible de mettre à jour le rendez-vous'),
+                summary: t('common.error'),
+                detail: getApiErrorMessage(error, t('appointmentDetail.updateError')),
             });
         } finally {
             setSubmitting(false);
@@ -128,10 +130,10 @@ const AppointmentDetail: React.FC = () => {
         if (!appointment) return;
         try {
             await appointmentService.confirmAppointment(appointment.id);
-            toast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous confirmé' });
+            toast.current?.show({ severity: 'success', summary: t('common.success'), detail: t('appointments.confirmed') });
             loadAppointment(appointment.id);
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Erreur', detail: getApiErrorMessage(error) });
+            toast.current?.show({ severity: 'error', summary: t('common.error'), detail: getApiErrorMessage(error) });
         }
     };
 
@@ -139,26 +141,26 @@ const AppointmentDetail: React.FC = () => {
         if (!appointment) return;
         try {
             await appointmentService.completeAppointment(appointment.id);
-            toast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous terminé' });
+            toast.current?.show({ severity: 'success', summary: t('common.success'), detail: t('appointments.completed') });
             loadAppointment(appointment.id);
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Erreur', detail: getApiErrorMessage(error) });
+            toast.current?.show({ severity: 'error', summary: t('common.error'), detail: getApiErrorMessage(error) });
         }
     };
 
     const handleCancel = () => {
         if (!appointment) return;
         confirmDialog({
-            message: 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?',
-            header: 'Confirmation',
+            message: t('appointments.cancelConfirm'),
+            header: t('common.confirmation'),
             icon: 'pi pi-exclamation-triangle',
             accept: async () => {
                 try {
                     await appointmentService.cancelAppointment(appointment.id);
-                    toast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous annulé' });
+                    toast.current?.show({ severity: 'success', summary: t('common.success'), detail: t('appointments.cancelled') });
                     loadAppointment(appointment.id);
                 } catch (error) {
-                    toast.current?.show({ severity: 'error', summary: 'Erreur', detail: getApiErrorMessage(error) });
+                    toast.current?.show({ severity: 'error', summary: t('common.error'), detail: getApiErrorMessage(error) });
                 }
             },
         });
@@ -167,16 +169,16 @@ const AppointmentDetail: React.FC = () => {
     const handleDelete = () => {
         if (!appointment) return;
         confirmDialog({
-            message: 'Êtes-vous sûr de vouloir supprimer ce rendez-vous ?',
-            header: 'Confirmation de suppression',
+            message: t('appointmentDetail.deleteConfirm'),
+            header: t('common.confirmDelete'),
             icon: 'pi pi-exclamation-triangle',
             accept: async () => {
                 try {
                     await appointmentService.deleteAppointment(appointment.id);
-                    toast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Rendez-vous supprimé' });
+                    toast.current?.show({ severity: 'success', summary: t('common.success'), detail: t('appointmentDetail.deleted') });
                     navigate('/appointments');
                 } catch (error) {
-                    toast.current?.show({ severity: 'error', summary: 'Erreur', detail: getApiErrorMessage(error, 'Impossible de supprimer') });
+                    toast.current?.show({ severity: 'error', summary: t('common.error'), detail: getApiErrorMessage(error, t('appointmentDetail.deleteError')) });
                 }
             },
         });
@@ -184,12 +186,12 @@ const AppointmentDetail: React.FC = () => {
 
     const getStatusTag = (status: string) => {
         const statusMap: Record<string, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' }> = {
-            'SCHEDULED': { label: 'Planifié', severity: 'info' },
-            'CONFIRMED': { label: 'Confirmé', severity: 'success' },
-            'IN_PROGRESS': { label: 'En cours', severity: 'warning' },
-            'COMPLETED': { label: 'Terminé', severity: 'success' },
-            'CANCELLED': { label: 'Annulé', severity: 'danger' },
-            'NO_SHOW': { label: 'Non présenté', severity: 'secondary' },
+            'SCHEDULED': { label: t('status.scheduled'), severity: 'info' },
+            'CONFIRMED': { label: t('status.confirmed'), severity: 'success' },
+            'IN_PROGRESS': { label: t('status.inProgress'), severity: 'warning' },
+            'COMPLETED': { label: t('status.completed'), severity: 'success' },
+            'CANCELLED': { label: t('status.cancelled'), severity: 'danger' },
+            'NO_SHOW': { label: t('status.noShow'), severity: 'secondary' },
         };
         const s = statusMap[status] || { label: status, severity: 'info' };
         return <Tag value={s.label} severity={s.severity} />;
@@ -197,10 +199,10 @@ const AppointmentDetail: React.FC = () => {
 
     const getTypeLabel = (type: string) => {
         const map: Record<string, string> = {
-            'CONSULTATION': 'Consultation',
-            'FOLLOW_UP': 'Suivi',
-            'EXAMINATION': 'Examen',
-            'EMERGENCY': 'Urgence',
+            'CONSULTATION': t('types.consultation'),
+            'FOLLOW_UP': t('types.followUp'),
+            'EXAMINATION': t('types.examination'),
+            'EMERGENCY': t('types.emergency'),
         };
         return map[type] || type;
     };
@@ -241,8 +243,8 @@ const AppointmentDetail: React.FC = () => {
         return (
             <div className="flex flex-column align-items-center justify-content-center" style={{ minHeight: '400px' }}>
                 <i className="pi pi-exclamation-circle text-4xl text-orange-500 mb-3"></i>
-                <h2>Rendez-vous introuvable</h2>
-                <Button label="Retour aux rendez-vous" icon="pi pi-arrow-left" onClick={() => navigate('/appointments')} />
+                <h2>{t('appointmentDetail.notFound')}</h2>
+                <Button label={t('appointmentDetail.backToList')} icon="pi pi-arrow-left" onClick={() => navigate('/appointments')} />
             </div>
         );
     }
@@ -253,25 +255,25 @@ const AppointmentDetail: React.FC = () => {
 
     const editDialogFooter = (
         <div className="flex justify-content-end gap-2">
-            <Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={() => setEditVisible(false)} />
-            <Button label="Enregistrer" icon="pi pi-check" loading={submitting} onClick={handleEditSubmit} />
+            <Button label={t('common.cancel')} icon="pi pi-times" className="p-button-text" onClick={() => setEditVisible(false)} />
+            <Button label={t('common.save')} icon="pi pi-check" loading={submitting} onClick={handleEditSubmit} />
         </div>
     );
 
     const statusOptions = [
-        { label: 'Planifié', value: 'SCHEDULED' },
-        { label: 'Confirmé', value: 'CONFIRMED' },
-        { label: 'En cours', value: 'IN_PROGRESS' },
-        { label: 'Terminé', value: 'COMPLETED' },
-        { label: 'Annulé', value: 'CANCELLED' },
-        { label: 'Non présenté', value: 'NO_SHOW' },
+        { label: t('status.scheduled'), value: 'SCHEDULED' },
+        { label: t('status.confirmed'), value: 'CONFIRMED' },
+        { label: t('status.inProgress'), value: 'IN_PROGRESS' },
+        { label: t('status.completed'), value: 'COMPLETED' },
+        { label: t('status.cancelled'), value: 'CANCELLED' },
+        { label: t('status.noShow'), value: 'NO_SHOW' },
     ];
 
     const typeOptions = [
-        { label: 'Consultation', value: 'CONSULTATION' },
-        { label: 'Suivi', value: 'FOLLOW_UP' },
-        { label: 'Examen', value: 'EXAMINATION' },
-        { label: 'Urgence', value: 'EMERGENCY' },
+        { label: t('types.consultation'), value: 'CONSULTATION' },
+        { label: t('types.followUp'), value: 'FOLLOW_UP' },
+        { label: t('types.examination'), value: 'EXAMINATION' },
+        { label: t('types.emergency'), value: 'EMERGENCY' },
     ];
 
     return (
@@ -283,29 +285,29 @@ const AppointmentDetail: React.FC = () => {
             <div className="flex justify-content-between align-items-start mb-4">
                 <div>
                     <Button
-                        label="Retour"
+                        label={t('common.back')}
                         icon="pi pi-arrow-left"
                         className="p-button-text mb-2"
                         onClick={() => navigate('/appointments')}
                     />
-                    <h1 className="text-3xl font-bold m-0">Rendez-vous #{appointment.id}</h1>
+                    <h1 className="text-3xl font-bold m-0">{t('appointmentDetail.title', { id: appointment.id })}</h1>
                     <div className="flex gap-2 mt-2">
                         {getStatusTag(appointment.status)}
                         <Tag value={getTypeLabel(appointment.type)} className="bg-blue-100 text-blue-700" />
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button label="Modifier" icon="pi pi-pencil" className="p-button-warning" onClick={openEditDialog} />
+                    <Button label={t('common.edit')} icon="pi pi-pencil" className="p-button-warning" onClick={openEditDialog} />
                     {canConfirm && (
-                        <Button label="Confirmer" icon="pi pi-check" className="p-button-success" onClick={handleConfirm} />
+                        <Button label={t('common.confirm')} icon="pi pi-check" className="p-button-success" onClick={handleConfirm} />
                     )}
                     {canComplete && (
-                        <Button label="Terminer" icon="pi pi-check-circle" className="p-button-info" onClick={handleComplete} />
+                        <Button label={t('common.complete')} icon="pi pi-check-circle" className="p-button-info" onClick={handleComplete} />
                     )}
                     {canCancel && (
-                        <Button label="Annuler" icon="pi pi-times-circle" className="p-button-secondary" onClick={handleCancel} />
+                        <Button label={t('common.cancel')} icon="pi pi-times-circle" className="p-button-secondary" onClick={handleCancel} />
                     )}
-                    <Button label="Supprimer" icon="pi pi-trash" className="p-button-danger" onClick={handleDelete} />
+                    <Button label={t('common.delete')} icon="pi pi-trash" className="p-button-danger" onClick={handleDelete} />
                 </div>
             </div>
 
@@ -314,15 +316,15 @@ const AppointmentDetail: React.FC = () => {
                 <div className="col-12 md:col-6">
                     <Card className="shadow-2" title="Patient">
                         <div className="flex flex-column gap-2">
-                            <div><strong>Nom:</strong> {appointment.patient?.fullName || `${appointment.patient?.firstName} ${appointment.patient?.lastName}`}</div>
-                            <div><strong>Téléphone:</strong> {appointment.patient?.phone}</div>
+                            <div><strong>{t('common.name')}:</strong> {appointment.patient?.fullName || `${appointment.patient?.firstName} ${appointment.patient?.lastName}`}</div>
+                            <div><strong>{t('common.phone')}:</strong> {appointment.patient?.phone}</div>
                         </div>
                     </Card>
                 </div>
                 <div className="col-12 md:col-6">
-                    <Card className="shadow-2" title="Médecin">
+                    <Card className="shadow-2" title={t('appointments.headers.doctor')}>
                         <div className="flex flex-column gap-2">
-                            <div><strong>Nom:</strong> {appointment.doctor?.fullName || `${appointment.doctor?.firstName} ${appointment.doctor?.lastName}`}</div>
+                            <div><strong>{t('common.name')}:</strong> {appointment.doctor?.fullName || `${appointment.doctor?.firstName} ${appointment.doctor?.lastName}`}</div>
                         </div>
                     </Card>
                 </div>
@@ -330,35 +332,35 @@ const AppointmentDetail: React.FC = () => {
 
             {/* Tabs */}
             <TabView>
-                <TabPanel header="Informations" leftIcon="pi pi-info-circle mr-2">
+                <TabPanel header={t('appointmentDetail.tabs.info')} leftIcon="pi pi-info-circle mr-2">
                     <Card className="shadow-2">
                         <div className="grid">
                             <div className="col-12 md:col-6">
-                                <h3 className="text-lg font-semibold mb-3">Détails du rendez-vous</h3>
+                                <h3 className="text-lg font-semibold mb-3">{t('appointmentDetail.info.details')}</h3>
                                 <div className="flex flex-column gap-3">
-                                    <div><strong>Date de début:</strong> {new Date(appointment.startAt).toLocaleString('fr-FR')}</div>
-                                    <div><strong>Date de fin:</strong> {new Date(appointment.endAt).toLocaleString('fr-FR')}</div>
-                                    <div><strong>Type:</strong> {getTypeLabel(appointment.type)}</div>
-                                    <div><strong>Motif:</strong> {appointment.reason || '-'}</div>
+                                    <div><strong>{t('appointmentDetail.info.startDate')}:</strong> {new Date(appointment.startAt).toLocaleString('fr-FR')}</div>
+                                    <div><strong>{t('appointmentDetail.info.endDate')}:</strong> {new Date(appointment.endAt).toLocaleString('fr-FR')}</div>
+                                    <div><strong>{t('appointmentDetail.info.type')}:</strong> {getTypeLabel(appointment.type)}</div>
+                                    <div><strong>{t('appointmentDetail.info.reason')}:</strong> {appointment.reason || '-'}</div>
                                 </div>
                             </div>
                             <div className="col-12 md:col-6">
-                                <h3 className="text-lg font-semibold mb-3">Informations complémentaires</h3>
+                                <h3 className="text-lg font-semibold mb-3">{t('appointmentDetail.info.additionalInfo')}</h3>
                                 <div className="flex flex-column gap-3">
-                                    <div><strong>Notes:</strong> {appointment.notes || '-'}</div>
-                                    <div><strong>Récurrent:</strong> {appointment.isRecurring ? 'Oui' : 'Non'}</div>
+                                    <div><strong>{t('appointmentDetail.info.notes')}:</strong> {appointment.notes || '-'}</div>
+                                    <div><strong>{t('appointmentDetail.info.recurring')}:</strong> {appointment.isRecurring ? t('common.yes') : t('common.no')}</div>
                                     {appointment.isRecurring && appointment.recurrencePattern && (
-                                        <div><strong>Pattern de récurrence:</strong> {appointment.recurrencePattern}</div>
+                                        <div><strong>{t('appointmentDetail.info.recurrencePattern')}:</strong> {appointment.recurrencePattern}</div>
                                     )}
-                                    <div><strong>Créé le:</strong> {new Date(appointment.createdAt).toLocaleString('fr-FR')}</div>
-                                    <div><strong>Mis à jour:</strong> {new Date(appointment.updatedAt).toLocaleString('fr-FR')}</div>
+                                    <div><strong>{t('appointmentDetail.info.createdAt')}:</strong> {new Date(appointment.createdAt).toLocaleString('fr-FR')}</div>
+                                    <div><strong>{t('appointmentDetail.info.updatedAt')}:</strong> {new Date(appointment.updatedAt).toLocaleString('fr-FR')}</div>
                                 </div>
                             </div>
                         </div>
                     </Card>
                 </TabPanel>
 
-                <TabPanel header="Historique des activités" leftIcon="pi pi-history mr-2">
+                <TabPanel header={t('appointmentDetail.tabs.activityHistory')} leftIcon="pi pi-history mr-2">
                     <ActivityHistory logs={auditLogs} loading={auditLoading} />
                 </TabPanel>
             </TabView>
@@ -367,80 +369,80 @@ const AppointmentDetail: React.FC = () => {
             <Dialog
                 visible={editVisible}
                 onHide={() => setEditVisible(false)}
-                header="Modifier le rendez-vous"
+                header={t('appointmentDetail.editDialog')}
                 className="w-11/12 md:w-8 lg:w-6"
                 footer={editDialogFooter}
             >
                 <div className="grid">
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Patient *</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.patient')}</label>
                         <Dropdown
                             value={editData.patientId}
                             options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
                             onChange={(e) => setEditData({ ...editData, patientId: e.value })}
-                            placeholder="Sélectionner un patient"
+                            placeholder={t('appointmentDetail.form.selectPatient')}
                             className="w-full"
                             filter
-                            filterPlaceholder="Rechercher..."
+                            filterPlaceholder={t('common.searchPlaceholder')}
                             disabled={true}
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Médecin *</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.doctor')}</label>
                         <Dropdown
                             value={editData.doctorId}
                             options={doctors.map((d) => ({ label: `${d.firstName} ${d.lastName}`, value: d.id }))}
                             onChange={(e) => setEditData({ ...editData, doctorId: e.value })}
-                            placeholder="Sélectionner un médecin"
+                            placeholder={t('appointmentDetail.form.selectDoctor')}
                             className="w-full"
                             filter
-                            filterPlaceholder="Rechercher..."
+                            filterPlaceholder={t('common.searchPlaceholder')}
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Date de début *</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.startDate')}</label>
                         <PrimeCalendar
                             value={editData.startAt}
                             onChange={(e) => setEditData({ ...editData, startAt: e.value as Date })}
                             className="w-full"
                             showTime
                             hourFormat="24"
-                            placeholder="Date et heure"
+                            placeholder={t('appointmentDetail.form.dateTimePlaceholder')}
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Date de fin *</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.endDate')}</label>
                         <PrimeCalendar
                             value={editData.endAt}
                             onChange={(e) => setEditData({ ...editData, endAt: e.value as Date })}
                             className="w-full"
                             showTime
                             hourFormat="24"
-                            placeholder="Date et heure"
+                            placeholder={t('appointmentDetail.form.dateTimePlaceholder')}
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Type</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.type')}</label>
                         <Dropdown
                             value={editData.type}
                             options={typeOptions}
                             onChange={(e) => setEditData({ ...editData, type: e.value })}
-                            placeholder="Sélectionner"
+                            placeholder={t('common.select')}
                             className="w-full"
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Statut</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.status')}</label>
                         <Dropdown
                             value={editData.status}
                             options={statusOptions}
                             onChange={(e) => setEditData({ ...editData, status: e.value })}
-                            placeholder="Sélectionner"
+                            placeholder={t('common.select')}
                             className="w-full"
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Motif</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.reason')}</label>
                         <InputText
                             value={editData.reason || ''}
                             onChange={(e) => setEditData({ ...editData, reason: e.target.value })}
@@ -448,7 +450,7 @@ const AppointmentDetail: React.FC = () => {
                         />
                     </div>
                     <div className="col-12 md:col-6 field">
-                        <label className="block font-medium mb-2">Notes</label>
+                        <label className="block font-medium mb-2">{t('appointmentDetail.form.notes')}</label>
                         <InputTextarea
                             value={editData.notes || ''}
                             onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
