@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patientService';
 import { auditLogService } from '../services/auditLogService';
@@ -16,6 +17,7 @@ import ActivityHistory from '../components/ActivityHistory';
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -45,8 +47,8 @@ const PatientDetail: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les détails du patient',
+        summary: t('common.error'),
+        detail: t('patientDetail.loadError'),
       });
     } finally {
       setLoading(false);
@@ -73,9 +75,9 @@ const PatientDetail: React.FC = () => {
     return (
       <div className="text-center py-8">
         <i className="pi pi-exclamation-circle text-6xl text-500 mb-4"></i>
-        <h2 className="text-2xl font-semibold">Patient non trouvé</h2>
+        <h2 className="text-2xl font-semibold">{t('patientDetail.notFound')}</h2>
         <Button
-          label="Retour à la liste"
+          label={t('common.backToList')}
           icon="pi pi-arrow-left"
           className="mt-4"
           onClick={() => navigate('/patients')}
@@ -92,7 +94,7 @@ const PatientDetail: React.FC = () => {
       <div className="flex justify-content-between align-items-start mb-4">
         <div>
           <Button
-            label="Retour"
+            label={t('common.back')}
             icon="pi pi-arrow-left"
             className="p-button-text mb-2"
             onClick={() => navigate('/patients')}
@@ -102,30 +104,30 @@ const PatientDetail: React.FC = () => {
             {patient.gender && (
               <Tag
                 icon={patient.gender === 'M' ? 'pi pi-male' : 'pi pi-female'}
-                value={patient.gender === 'M' ? 'Homme' : 'Femme'}
+                value={patient.gender === 'M' ? t('patients.male') : t('patients.female')}
                 className={patient.gender === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}
               />
             )}
             {patient.bloodType && (
-              <Tag icon="pi pi-tint" value={`Groupe: ${patient.bloodType}`} className="bg-red-100 text-red-700" />
+              <Tag icon="pi pi-tint" value={t('patientDetail.bloodGroup', { type: patient.bloodType })} className="bg-red-100 text-red-700" />
             )}
           </div>
         </div>
         <div className="flex gap-2">
           <Button
-            label="Nouveau RDV"
+            label={t('patientDetail.newAppointment')}
             icon="pi pi-calendar-plus"
             className="p-button-info"
             onClick={() => navigate('/calendar', { state: { patientId: patient.id } })}
           />
           <Button
-            label="Nouvelle consultation"
+            label={t('patientDetail.newConsultation')}
             icon="pi pi-file-edit"
             className="p-button-success"
             onClick={() => navigate('/consultations', { state: { patientId: patient.id } })}
           />
           <Button
-            label="Modifier"
+            label={t('common.edit')}
             icon="pi pi-pencil"
             className="p-button-warning"
             onClick={() => navigate('/patients', { state: { editId: patient.id } })}
@@ -140,7 +142,7 @@ const PatientDetail: React.FC = () => {
             <div className="flex align-items-center gap-3">
               <i className="pi pi-phone text-primary text-2xl"></i>
               <div>
-                <div className="text-500 text-sm">Téléphone</div>
+                <div className="text-500 text-sm">{t('patientDetail.phone')}</div>
                 <div className="font-medium">{patient.phone}</div>
               </div>
             </div>
@@ -162,7 +164,7 @@ const PatientDetail: React.FC = () => {
             <div className="flex align-items-center gap-3">
               <i className="pi pi-envelope text-primary text-2xl"></i>
               <div>
-                <div className="text-500 text-sm">Email</div>
+                <div className="text-500 text-sm">{t('patientDetail.email')}</div>
                 <div className="font-medium">{patient.email || '-'}</div>
               </div>
             </div>
@@ -173,9 +175,9 @@ const PatientDetail: React.FC = () => {
             <div className="flex align-items-center gap-3">
               <i className="pi pi-calendar text-primary text-2xl"></i>
               <div>
-                <div className="text-500 text-sm">Âge / Date de naissance</div>
+                <div className="text-500 text-sm">{t('patientDetail.ageBirthDate')}</div>
                 <div className="font-medium">
-                  {patient.age ? `${patient.age} ans` : '-'}
+                  {patient.age ? `${patient.age} ${t('patients.years')}` : '-'}
                   {patient.birthDate && ` ${new Date(patient.birthDate).toLocaleDateString('fr-FR')}`}
                 </div>
               </div>
@@ -186,80 +188,80 @@ const PatientDetail: React.FC = () => {
 
       {/* Tabs */}
       <TabView>
-        <TabPanel header="Informations" leftIcon="pi pi-user mr-2">
+        <TabPanel header={t('patientDetail.tabs.info')} leftIcon="pi pi-user mr-2">
           <Card className="shadow-2">
             <div className="grid">
               <div className="col-12 md:col-6">
-                <h3 className="text-lg font-semibold mb-3">Coordonnées</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.info.contactDetails')}</h3>
                 <div className="flex flex-column gap-2">
-                  <div><strong>Adresse:</strong> {patient.address || '-'}</div>
-                  <div><strong>Ville:</strong> {patient.city || '-'}</div>
+                  <div><strong>{t('patientDetail.info.address')}:</strong> {patient.address || '-'}</div>
+                  <div><strong>{t('patientDetail.info.city')}:</strong> {patient.city || '-'}</div>
                 </div>
               </div>
               <div className="col-12 md:col-6">
-                <h3 className="text-lg font-semibold mb-3">Assurance</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.info.insurance')}</h3>
                 <div className="flex flex-column gap-2">
-                  <div><strong>Organisme:</strong> {patient.insuranceProvider || '-'}</div>
-                  <div><strong>Numéro:</strong> {patient.insuranceNumber || '-'}</div>
+                  <div><strong>{t('patientDetail.info.insuranceProvider')}:</strong> {patient.insuranceProvider || '-'}</div>
+                  <div><strong>{t('patientDetail.info.insuranceNumber')}:</strong> {patient.insuranceNumber || '-'}</div>
                 </div>
               </div>
               <div className="col-12 md:col-6">
-                <h3 className="text-lg font-semibold mb-3">Contact d'urgence</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.info.emergencyContact')}</h3>
                 <div className="flex flex-column gap-2">
-                  <div><strong>Nom:</strong> {patient.emergencyContactName || '-'}</div>
-                  <div><strong>Téléphone:</strong> {patient.emergencyContactPhone || '-'}</div>
+                  <div><strong>{t('patientDetail.info.emergencyName')}:</strong> {patient.emergencyContactName || '-'}</div>
+                  <div><strong>{t('patientDetail.info.emergencyPhone')}:</strong> {patient.emergencyContactPhone || '-'}</div>
                 </div>
               </div>
             </div>
           </Card>
         </TabPanel>
 
-        <TabPanel header="Antécédents" leftIcon="pi pi-heart mr-2">
+        <TabPanel header={t('patientDetail.tabs.history')} leftIcon="pi pi-heart mr-2">
           <Card className="shadow-2">
             <div className="grid">
               <div className="col-12 md:col-6">
-                <h3 className="text-lg font-semibold mb-3">Antécédents médicaux</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.history.medicalHistory')}</h3>
                 <p className="surface-100 p-3 border-round">
-                  {patient.medicalHistory || 'Aucun antécédent médical enregistré'}
+                  {patient.medicalHistory || t('patientDetail.history.noMedicalHistory')}
                 </p>
               </div>
               <div className="col-12 md:col-6">
-                <h3 className="text-lg font-semibold mb-3">Allergies</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.history.allergies')}</h3>
                 <p className="surface-100 p-3 border-round">
-                  {patient.allergies || 'Aucune allergie connue'}
+                  {patient.allergies || t('patientDetail.history.noAllergies')}
                 </p>
               </div>
               <div className="col-12">
-                <h3 className="text-lg font-semibold mb-3">Maladies chroniques</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('patientDetail.history.chronicConditions')}</h3>
                 <p className="surface-100 p-3 border-round">
-                  {patient.chronicConditions || 'Aucune maladie chronique connue'}
+                  {patient.chronicConditions || t('patientDetail.history.noChronicConditions')}
                 </p>
               </div>
             </div>
           </Card>
         </TabPanel>
 
-        <TabPanel header={`Consultations (${consultations.length})`} leftIcon="pi pi-file-edit mr-2">
+        <TabPanel header={t('patientDetail.tabs.consultations', { count: consultations.length })} leftIcon="pi pi-file-edit mr-2">
           <Card className="shadow-2">
             <DataTable
               value={consultations}
               paginator
               rows={5}
-              emptyMessage="Aucune consultation"
+              emptyMessage={t('patientDetail.consultationTable.noConsultations')}
             >
               <Column
                 field="createdAt"
-                header="Date"
+                header={t('patientDetail.consultationTable.date')}
                 body={(row) => new Date(row.createdAt).toLocaleDateString('fr-FR')}
               />
-              <Column field="reason" header="Motif" />
-              <Column field="diagnosis" header="Diagnostic" />
+              <Column field="reason" header={t('patientDetail.consultationTable.reason')} />
+              <Column field="diagnosis" header={t('patientDetail.consultationTable.diagnosis')} />
               <Column
                 field="status"
-                header="Statut"
+                header={t('patientDetail.consultationTable.status')}
                 body={(row) => (
                   <Tag
-                    value={row.status === 'COMPLETED' ? 'Terminée' : 'En cours'}
+                    value={row.status === 'COMPLETED' ? t('status.completedF') : t('status.inProgress')}
                     severity={row.status === 'COMPLETED' ? 'success' : 'warning'}
                   />
                 )}
@@ -277,29 +279,29 @@ const PatientDetail: React.FC = () => {
           </Card>
         </TabPanel>
 
-        <TabPanel header={`Rendez-vous (${appointments.length})`} leftIcon="pi pi-calendar mr-2">
+        <TabPanel header={t('patientDetail.tabs.appointments', { count: appointments.length })} leftIcon="pi pi-calendar mr-2">
           <Card className="shadow-2">
             <DataTable
               value={appointments}
               paginator
               rows={5}
-              emptyMessage="Aucun rendez-vous"
+              emptyMessage={t('patientDetail.appointmentTable.noAppointments')}
             >
               <Column
                 field="startAt"
-                header="Date"
+                header={t('patientDetail.appointmentTable.date')}
                 body={(row) => new Date(row.startAt).toLocaleString('fr-FR')}
               />
-              <Column field="reason" header="Motif" />
+              <Column field="reason" header={t('patientDetail.appointmentTable.reason')} />
               <Column
                 field="status"
-                header="Statut"
+                header={t('patientDetail.appointmentTable.status')}
                 body={(row) => {
                   const statusMap: Record<string, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' }> = {
-                    'SCHEDULED': { label: 'Planifié', severity: 'info' },
-                    'CONFIRMED': { label: 'Confirmé', severity: 'success' },
-                    'COMPLETED': { label: 'Terminé', severity: 'success' },
-                    'CANCELLED': { label: 'Annulé', severity: 'danger' },
+                    'SCHEDULED': { label: t('status.scheduled'), severity: 'info' },
+                    'CONFIRMED': { label: t('status.confirmed'), severity: 'success' },
+                    'COMPLETED': { label: t('status.completed'), severity: 'success' },
+                    'CANCELLED': { label: t('status.cancelled'), severity: 'danger' },
                   };
                   const status = statusMap[row.status] || { label: row.status, severity: 'info' };
                   return <Tag value={status.label} severity={status.severity} />;
@@ -309,7 +311,7 @@ const PatientDetail: React.FC = () => {
           </Card>
         </TabPanel>
 
-        <TabPanel header="Historique des activités" leftIcon="pi pi-history mr-2">
+        <TabPanel header={t('patientDetail.tabs.activityHistory')} leftIcon="pi pi-history mr-2">
           <ActivityHistory logs={auditLogs} loading={auditLoading} />
         </TabPanel>
       </TabView>

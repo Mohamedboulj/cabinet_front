@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { PrimeReactProvider } from 'primereact/api'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import './i18n'
 
 // PrimeReact CSS
 import 'primereact/resources/themes/lara-light-indigo/theme.css'

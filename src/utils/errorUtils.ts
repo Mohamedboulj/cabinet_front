@@ -8,7 +8,9 @@
  *   { "errors": { "field": "..." } }  (validation)
  *   { "violations": [{ "message": "..." }] }  (Symfony validator)
  */
-export function getApiErrorMessage(error: any, fallback: string = 'Une erreur est survenue'): string {
+import i18n from '../i18n';
+
+export function getApiErrorMessage(error: any, fallback: string = i18n.t('common.genericError')): string {
     const data = error?.response?.data;
 
     if (!data) {
@@ -22,7 +24,7 @@ export function getApiErrorMessage(error: any, fallback: string = 'Une erreur es
 
     // Database Duplicate Entry (MySQL Error 1062)
     if (data.code === 1062) {
-        return "One or more patients in the file already exist with the same CIN or Email.";
+        return i18n.t('common.duplicateEntry');
     }
 
     // Common backend error field names
@@ -43,3 +45,4 @@ export function getApiErrorMessage(error: any, fallback: string = 'Une erreur es
 
     return fallback;
 }
+

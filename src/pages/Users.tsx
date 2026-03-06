@@ -13,8 +13,10 @@ import { MultiSelect } from 'primereact/multiselect';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { userService } from "../services/userService.ts";
 import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
+import { useTranslation } from 'react-i18next';
 
 const Users: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +37,8 @@ const Users: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les utilisateurs',
+        summary: t('common.error'),
+        detail: t('users.loadError'),
       });
     } finally {
       setLoading(false);
@@ -45,9 +47,9 @@ const Users: React.FC = () => {
 
   const roleBodyTemplate = (rowData: User) => {
     const roleLabels: Record<string, string> = {
-      'ROLE_ADMIN': 'Administrateur',
-      'ROLE_MEDECIN': 'Médecin',
-      'ROLE_SECRETAIRE': 'Secrétaire',
+      'ROLE_ADMIN': t('users.roles.admin'),
+      'ROLE_MEDECIN': t('users.roles.doctor'),
+      'ROLE_SECRETAIRE': t('users.roles.secretary'),
     };
     return (
       <div className="flex gap-1">
@@ -60,9 +62,9 @@ const Users: React.FC = () => {
 
   const statusBodyTemplate = (rowData: User) => {
     return rowData.isActive ? (
-      <Tag value="Actif" severity="success" />
+      <Tag value={t('users.active')} severity="success" />
     ) : (
-      <Tag value="Inactif" severity="danger" />
+      <Tag value={t('users.inactive')} severity="danger" />
     );
   };
 
@@ -80,24 +82,24 @@ const Users: React.FC = () => {
 
   const confirmDelete = (user: User) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer ${user.firstName} ${user.lastName} ?`,
-      header: 'Confirmation',
+      message: t('users.confirmDeleteMessage', { name: `${user.firstName} ${user.lastName}` }),
+      header: t('common.confirmation'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Utilisateur supprimé',
+          summary: t('common.success'),
+          detail: t('users.deleted'),
         });
       },
     });
   };
 
   const handleToggleActive = (user: User) => {
-    const action = user.isActive ? 'désactiver' : 'activer';
+    const action = user.isActive ? t('users.deactivate') : t('users.activate');
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir ${action} ${user.firstName} ${user.lastName} ?`,
-      header: 'Confirmation',
+      message: t('users.confirmToggle', { action, name: `${user.firstName} ${user.lastName}` }),
+      header: t('common.confirmation'),
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
@@ -108,14 +110,14 @@ const Users: React.FC = () => {
           }
           toast.current?.show({
             severity: 'success',
-            summary: 'Succès',
-            detail: `Utilisateur ${user.isActive ? 'désactivé' : 'activé'} avec succès`,
+            summary: t('common.success'),
+            detail: t('users.toggleSuccess', { action: user.isActive ? t('users.deactivated') : t('users.activated') }),
           });
           loadUsers();
         } catch (error: any) {
           toast.current?.show({
             severity: 'error',
-            summary: 'Erreur',
+            summary: t('common.error'),
             detail: getApiErrorMessage(error),
           });
         }
@@ -130,15 +132,15 @@ const Users: React.FC = () => {
         await userService.updateUser(editingUser.id, formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Utilisateur mis à jour',
+          summary: t('common.success'),
+          detail: t('users.updated'),
         });
       } else {
         await userService.createUser(formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Utilisateur créé',
+          summary: t('common.success'),
+          detail: t('users.created'),
         });
       }
       setDialogVisible(false);
@@ -146,7 +148,7 @@ const Users: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('common.error'),
         detail: getApiErrorMessage(error),
       });
     } finally {
@@ -157,13 +159,13 @@ const Users: React.FC = () => {
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
       <Button
-        label="Annuler"
+        label={t('common.cancel')}
         icon="pi pi-times"
         className="p-button-text"
         onClick={() => setDialogVisible(false)}
       />
       <Button
-        label={editingUser ? 'Modifier' : 'Créer'}
+        label={editingUser ? t('common.edit') : t('common.create')}
         icon="pi pi-check"
         loading={submitting}
         onClick={handleSubmit}
@@ -177,9 +179,9 @@ const Users: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Gestion des Utilisateurs</h1>
+        <h1 className="text-3xl font-bold m-0">{t('users.title')}</h1>
         <Button
-          label="Nouvel utilisateur"
+          label={t('users.newUser')}
           icon="pi pi-plus"
           className="p-button-success"
           onClick={openNewDialog}
@@ -187,51 +189,51 @@ const Users: React.FC = () => {
       </div>
 
       {loading ? (
-        <DataTableSkeleton headers={['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Spécialité', 'Rôles', 'Statut', 'Actions']} />
+        <DataTableSkeleton headers={[t('users.headers.id'), t('users.headers.lastName'), t('users.headers.firstName'), t('users.headers.email'), t('users.headers.phone'), t('users.headers.specialty'), t('users.headers.roles'), t('users.headers.status'), t('users.headers.actions')]} />
       ) : (
         <DataTable
           value={users}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucun utilisateur trouvé"
+          emptyMessage={t('users.noUsers')}
           className="shadow-2"
         >
-          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-          <Column field="lastName" header="Nom" sortable />
-          <Column field="firstName" header="Prénom" sortable />
-          <Column field="email" header="Email" sortable />
-          <Column field="phone" header="Téléphone" />
-          <Column field="specialty" header="Spécialité" />
-          <Column field="roles" header="Rôles" body={roleBodyTemplate} />
-          <Column field="isActive" header="Statut" body={statusBodyTemplate} sortable />
+          <Column field="id" header={t('users.headers.id')} sortable style={{ width: '5rem' }} />
+          <Column field="lastName" header={t('users.headers.lastName')} sortable />
+          <Column field="firstName" header={t('users.headers.firstName')} sortable />
+          <Column field="email" header={t('users.headers.email')} sortable />
+          <Column field="phone" header={t('users.headers.phone')} />
+          <Column field="specialty" header={t('users.headers.specialty')} />
+          <Column field="roles" header={t('users.headers.roles')} body={roleBodyTemplate} />
+          <Column field="isActive" header={t('users.headers.status')} body={statusBodyTemplate} sortable />
           <Column
             body={(rowData) => (
               <div className="flex gap-1">
                 <Button
                   icon="pi pi-pencil"
                   className="p-button-rounded p-button-warning p-button-sm"
-                  tooltip="Modifier"
+                  tooltip={t('common.edit')}
                   tooltipOptions={{ position: 'top' }}
                   onClick={() => openEditDialog(rowData)}
                 />
                 <Button
                   icon={rowData.isActive ? 'pi pi-lock' : 'pi pi-lock-open'}
                   className={`p-button-rounded p-button-sm ${rowData.isActive ? 'p-button-secondary' : 'p-button-success'}`}
-                  tooltip={rowData.isActive ? 'Désactiver' : 'Activer'}
+                  tooltip={rowData.isActive ? t('users.deactivate') : t('users.activate')}
                   tooltipOptions={{ position: 'top' }}
                   onClick={() => handleToggleActive(rowData)}
                 />
                 <Button
                   icon="pi pi-trash"
                   className="p-button-rounded p-button-danger p-button-sm"
-                  tooltip="Supprimer"
+                  tooltip={t('common.delete')}
                   tooltipOptions={{ position: 'top' }}
                   onClick={() => confirmDelete(rowData)}
                 />
               </div>
             )}
-            header="Actions"
+            header={t('users.headers.actions')}
             style={{ width: '10rem' }}
           />
         </DataTable>
@@ -241,14 +243,14 @@ const Users: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
+        header={editingUser ? t('users.editDialog') : t('users.newDialog')}
         className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="flex flex-column gap-3">
           <div className="grid">
             <div className="col-6 field">
-              <label className="block font-medium mb-2">Nom *</label>
+              <label className="block font-medium mb-2">{t('users.form.lastName')}</label>
               <InputText
                 value={formData.lastName || ''}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
@@ -256,7 +258,7 @@ const Users: React.FC = () => {
               />
             </div>
             <div className="col-6 field">
-              <label className="block font-medium mb-2">Prénom *</label>
+              <label className="block font-medium mb-2">{t('users.form.firstName')}</label>
               <InputText
                 value={formData.firstName || ''}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -265,7 +267,7 @@ const Users: React.FC = () => {
             </div>
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Email *</label>
+            <label className="block font-medium mb-2">{t('users.form.email')}</label>
             <InputText
               type="email"
               value={formData.email || ''}
@@ -274,7 +276,7 @@ const Users: React.FC = () => {
             />
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Téléphone</label>
+            <label className="block font-medium mb-2">{t('users.form.phone')}</label>
             <InputText
               value={formData.phone || ''}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -282,39 +284,39 @@ const Users: React.FC = () => {
             />
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Spécialité</label>
+            <label className="block font-medium mb-2">{t('users.form.specialty')}</label>
             <InputText
               value={formData.specialty || ''}
               onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
               className="w-full"
-              placeholder="Pour les médecins"
+              placeholder={t('users.form.specialtyPlaceholder')}
             />
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Numéro de licence</label>
+            <label className="block font-medium mb-2">{t('users.form.licenseNumber')}</label>
             <InputText
               value={formData.licenseNumber || ''}
               onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
               className="w-full"
-              placeholder="Pour les médecins"
+              placeholder={t('users.form.licenseNumberPlaceholder')}
             />
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Rôles *</label>
+            <label className="block font-medium mb-2">{t('users.form.roles')}</label>
             <MultiSelect
               value={formData.roles || []}
               options={[
-                { label: 'Administrateur', value: 'ROLE_ADMIN' },
-                { label: 'Médecin', value: 'ROLE_MEDECIN' },
-                { label: 'Secrétaire', value: 'ROLE_SECRETAIRE' },
+                { label: t('users.roles.admin'), value: 'ROLE_ADMIN' },
+                { label: t('users.roles.doctor'), value: 'ROLE_MEDECIN' },
+                { label: t('users.roles.secretary'), value: 'ROLE_SECRETAIRE' },
               ]}
               onChange={(e) => setFormData({ ...formData, roles: e.value })}
-              placeholder="Sélectionner les rôles"
+              placeholder={t('users.form.selectRoles')}
               className="w-full"
             />
           </div>
           <div className="field">
-            <label className="block font-medium mb-2">Devise</label>
+            <label className="block font-medium mb-2">{t('users.form.currency')}</label>
             <Dropdown
               value={formData.currency || 'MAD'}
               options={[
@@ -328,11 +330,11 @@ const Users: React.FC = () => {
           </div>
           {!editingUser && (
             <div className="field">
-              <label className="block font-medium mb-2">Mot de passe *</label>
+              <label className="block font-medium mb-2">{t('users.form.password')}</label>
               <InputText
                 type="password"
                 className="w-full"
-                placeholder="Mot de passe"
+                placeholder={t('users.form.passwordPlaceholder')}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>

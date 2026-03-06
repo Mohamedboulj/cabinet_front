@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { consultationService } from '../services/consultationService';
 import { patientService } from '../services/patientService';
@@ -19,6 +20,7 @@ import { InputNumber } from 'primereact/inputnumber';
 
 const Consultations: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -44,8 +46,8 @@ const Consultations: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les consultations',
+        summary: t('common.error'),
+        detail: t('consultations.loadError'),
       });
     } finally {
       setLoading(false);
@@ -83,8 +85,8 @@ const Consultations: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Erreur lors de la recherche',
+        summary: t('common.error'),
+        detail: t('consultations.searchError'),
       });
     } finally {
       setLoading(false);
@@ -126,16 +128,16 @@ const Consultations: React.FC = () => {
         await consultationService.updateConsultation(editingConsultation.id, formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Consultation mise à jour',
+          summary: t('common.success'),
+          detail: t('consultations.updated'),
         });
       } else {
         console.log(formData)
         await consultationService.createConsultation(formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Consultation créée',
+          summary: t('common.success'),
+          detail: t('consultations.created'),
         });
       }
       setDialogVisible(false);
@@ -143,8 +145,8 @@ const Consultations: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: error.response?.data?.message || 'Une erreur est survenue',
+        summary: t('common.error'),
+        detail: error.response?.data?.message || t('consultations.errorOccurred'),
       });
     } finally {
       setSubmitting(false);
@@ -153,8 +155,8 @@ const Consultations: React.FC = () => {
 
   const confirmDelete = (consultation: Consultation) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer cette consultation ?`,
-      header: 'Confirmation de suppression',
+      message: t('consultations.deleteConfirm'),
+      header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(consultation),
     });
@@ -165,15 +167,15 @@ const Consultations: React.FC = () => {
       await consultationService.deleteConsultation(consultation.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Consultation supprimée',
+        summary: t('common.success'),
+        detail: t('consultations.deleted'),
       });
       loadConsultations();
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: error.response?.data?.error || 'Impossible de supprimer la consultation',
+        summary: t('common.error'),
+        detail: error.response?.data?.error || t('consultations.deleteError'),
       });
     }
   };
@@ -183,38 +185,38 @@ const Consultations: React.FC = () => {
       await consultationService.completeConsultation(consultation.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Consultation terminée',
+        summary: t('common.success'),
+        detail: t('consultations.completed'),
       });
       loadConsultations();
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de terminer la consultation',
+        summary: t('common.error'),
+        detail: t('consultations.completeError'),
       });
     }
   };
 
   const handleCancel = async (consultation: Consultation) => {
     confirmDialog({
-      message: 'Êtes-vous sûr de vouloir annuler cette consultation ?',
-      header: 'Confirmation',
+      message: t('consultations.cancelConfirm'),
+      header: t('common.confirmation'),
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
           await consultationService.cancelConsultation(consultation.id);
           toast.current?.show({
             severity: 'success',
-            summary: 'Succès',
-            detail: 'Consultation annulée',
+            summary: t('common.success'),
+            detail: t('consultations.cancelled'),
           });
           loadConsultations();
         } catch (error) {
           toast.current?.show({
             severity: 'error',
-            summary: 'Erreur',
-            detail: "Impossible d'annuler la consultation",
+            summary: t('common.error'),
+            detail: t('consultations.cancelError'),
           });
         }
       },
@@ -223,9 +225,9 @@ const Consultations: React.FC = () => {
 
   const statusBodyTemplate = (rowData: Consultation) => {
     const statusMap: Record<string, { label: string; severity: 'success' | 'warning' | 'danger' }> = {
-      'IN_PROGRESS': { label: 'En cours', severity: 'warning' },
-      'COMPLETED': { label: 'Terminée', severity: 'success' },
-      'CANCELLED': { label: 'Annulée', severity: 'danger' },
+      'IN_PROGRESS': { label: t('status.inProgress'), severity: 'warning' },
+      'COMPLETED': { label: t('status.completedF'), severity: 'success' },
+      'CANCELLED': { label: t('status.cancelledF'), severity: 'danger' },
     };
     const status = statusMap[rowData.status] || { label: rowData.status, severity: 'warning' };
     return <Tag value={status.label} severity={status.severity} />;
@@ -233,9 +235,9 @@ const Consultations: React.FC = () => {
 
   const paymentBodyTemplate = (rowData: Consultation) => {
     return rowData.isPaid ? (
-      <Tag icon="pi pi-check" value="Payée" severity="success" />
+      <Tag icon="pi pi-check" value={t('status.paid')} severity="success" />
     ) : (
-      <Tag icon="pi pi-times" value="Non payée" severity="danger" />
+      <Tag icon="pi pi-times" value={t('consultationDetail.unpaid')} severity="danger" />
     );
   };
 
@@ -253,20 +255,20 @@ const Consultations: React.FC = () => {
           icon="pi pi-eye"
           className="p-button-rounded p-button-info p-button-sm"
           onClick={() => navigate(`/consultations/${rowData.id}`)}
-          tooltip="Voir"
+          tooltip={t('common.view')}
         />
         <Button
           icon="pi pi-pencil"
           className="p-button-rounded p-button-warning p-button-sm"
           onClick={() => openEditDialog(rowData)}
-          tooltip="Modifier"
+          tooltip={t('common.edit')}
         />
         {canComplete && (
           <Button
             icon="pi pi-check-circle"
             className="p-button-rounded p-button-success p-button-sm"
             onClick={() => handleComplete(rowData)}
-            tooltip="Terminer"
+            tooltip={t('common.complete')}
           />
         )}
         {canCancel && (
@@ -274,14 +276,14 @@ const Consultations: React.FC = () => {
             icon="pi pi-times-circle"
             className="p-button-rounded p-button-secondary p-button-sm"
             onClick={() => handleCancel(rowData)}
-            tooltip="Annuler"
+            tooltip={t('common.cancel')}
           />
         )}
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger p-button-sm"
           onClick={() => confirmDelete(rowData)}
-          tooltip="Supprimer"
+          tooltip={t('common.delete')}
         />
       </div>
     );
@@ -295,13 +297,13 @@ const Consultations: React.FC = () => {
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
       <Button
-        label="Annuler"
+        label={t('common.cancel')}
         icon="pi pi-times"
         className="p-button-text"
         onClick={() => setDialogVisible(false)}
       />
       <Button
-        label={editingConsultation ? 'Modifier' : 'Créer'}
+        label={editingConsultation ? t('common.edit') : t('common.create')}
         icon="pi pi-check"
         loading={submitting}
         onClick={handleSubmit}
@@ -315,9 +317,9 @@ const Consultations: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Consultations</h1>
+        <h1 className="text-3xl font-bold m-0">{t('consultations.title')}</h1>
         <Button
-          label="Nouvelle consultation"
+          label={t('consultations.newConsultation')}
           icon="pi pi-plus"
           className="p-button-success"
           onClick={openNewDialog}
@@ -331,7 +333,7 @@ const Consultations: React.FC = () => {
           <InputText
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une consultation..."
+            placeholder={t('consultations.searchPlaceholder')}
             className="w-full"
             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -342,25 +344,25 @@ const Consultations: React.FC = () => {
 
       {/* Consultations Table */}
       {loading ? (
-        <DataTableSkeleton headers={['Consultation N°', 'Patient', 'Médecin', 'Date', 'Motif', 'Diagnostic', 'Statut', 'Paiement', 'Actions']} />
+        <DataTableSkeleton headers={[t('consultations.headers.refNumber'), t('consultations.headers.patient'), t('consultations.headers.doctor'), t('consultations.headers.date'), t('consultations.headers.reason'), t('consultations.headers.diagnosis'), t('consultations.headers.status'), t('consultations.headers.payment'), t('consultations.headers.actions')]} />
       ) : (
         <DataTable
           value={consultations}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucune consultation trouvée"
+          emptyMessage={t('consultations.noConsultations')}
           className="shadow-2"
         >
-          <Column field="referenceNumber" header="Consultation N°" sortable />
-          <Column field="patient.lastName" header="Patient" body={patientFullName} sortable />
-          <Column field="doctor.lastName" header="Médecin" body={doctorFullName} sortable />
-          <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
-          <Column field="reason" header="Motif" />
-          <Column field="diagnosis" header="Diagnostic" />
-          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-          <Column field="isPaid" header="Paiement" body={paymentBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header="Actions" style={{ width: '14rem' }} />
+          <Column field="referenceNumber" header={t('consultations.headers.refNumber')} sortable />
+          <Column field="patient.lastName" header={t('consultations.headers.patient')} body={patientFullName} sortable />
+          <Column field="doctor.lastName" header={t('consultations.headers.doctor')} body={doctorFullName} sortable />
+          <Column field="createdAt" header={t('consultations.headers.date')} body={dateBodyTemplate} sortable />
+          <Column field="reason" header={t('consultations.headers.reason')} />
+          <Column field="diagnosis" header={t('consultations.headers.diagnosis')} />
+          <Column field="status" header={t('consultations.headers.status')} body={statusBodyTemplate} sortable />
+          <Column field="isPaid" header={t('consultations.headers.payment')} body={paymentBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header={t('consultations.headers.actions')} style={{ width: '14rem' }} />
         </DataTable>
       )}
 
@@ -368,60 +370,60 @@ const Consultations: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingConsultation ? 'Modifier la consultation' : 'Nouvelle consultation'}
+        header={editingConsultation ? t('consultations.editDialog') : t('consultations.newDialog')}
         className="w-11/12 md:w-8 lg:w-8"
         footer={dialogFooter}
       >
         <div className="grid">
           {/* Patient Selection */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Patient *</label>
+            <label className="block font-medium mb-2">{t('consultations.form.patient')}</label>
             <Dropdown
               value={formData.patientId}
               options={patients.map((p) => ({ label: `${p.firstName} ${p.lastName}`, value: p.id }))}
               onChange={(e) => setFormData({ ...formData, patientId: e.value })}
-              placeholder="Sélectionner un patient"
+              placeholder={t('consultations.form.selectPatient')}
               className="w-full"
               filter
-              filterPlaceholder="Rechercher..."
+              filterPlaceholder={t('common.searchPlaceholder')}
               disabled={!!editingConsultation}
             />
           </div>
 
           {/* Doctor Selection */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Médecin *</label>
+            <label className="block font-medium mb-2">{t('consultations.form.doctor')}</label>
             <Dropdown
               value={formData.doctorId}
               options={doctors.map((d) => ({ label: `${d.firstName} ${d.lastName}`, value: d.id }))}
               onChange={(e) => setFormData({ ...formData, doctorId: e.value })}
-              placeholder="Sélectionner un médecin"
+              placeholder={t('consultations.form.selectDoctor')}
               className="w-full"
               filter
-              filterPlaceholder="Rechercher..."
+              filterPlaceholder={t('common.searchPlaceholder')}
               disabled={!!editingConsultation} // Assuming the doctor shouldn't be changed for an existing consultation either, like patient.
             />
           </div>
 
           {/* Status */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Statut</label>
+            <label className="block font-medium mb-2">{t('consultations.form.status')}</label>
             <Dropdown
               value={formData.status}
               options={[
-                { label: 'En cours', value: 'IN_PROGRESS' },
-                { label: 'Terminée', value: 'COMPLETED' },
-                { label: 'Annulée', value: 'CANCELLED' },
+                { label: t('status.inProgress'), value: 'IN_PROGRESS' },
+                { label: t('status.completedF'), value: 'COMPLETED' },
+                { label: t('status.cancelledF'), value: 'CANCELLED' },
               ]}
               onChange={(e) => setFormData({ ...formData, status: e.value })}
-              placeholder="Sélectionner"
+              placeholder={t('common.select')}
               className="w-full"
             />
           </div>
 
           {/* Reason */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Motif de consultation *</label>
+            <label className="block font-medium mb-2">{t('consultations.form.reason')}</label>
             <InputText
               value={formData.reason || ''}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
@@ -431,7 +433,7 @@ const Consultations: React.FC = () => {
 
           {/* Anamnesis */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Anamnèse</label>
+            <label className="block font-medium mb-2">{t('consultations.form.anamnesis')}</label>
             <InputTextarea
               value={formData.anamnesis || ''}
               onChange={(e) => setFormData({ ...formData, anamnesis: e.target.value })}
@@ -443,7 +445,7 @@ const Consultations: React.FC = () => {
 
           {/* Examination */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Examen clinique</label>
+            <label className="block font-medium mb-2">{t('consultations.form.examination')}</label>
             <InputTextarea
               value={formData.examination || ''}
               onChange={(e) => setFormData({ ...formData, examination: e.target.value })}
@@ -455,7 +457,7 @@ const Consultations: React.FC = () => {
 
           {/* Diagnosis */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Diagnostic</label>
+            <label className="block font-medium mb-2">{t('consultations.form.diagnosis')}</label>
             <InputTextarea
               value={formData.diagnosis || ''}
               onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
@@ -467,7 +469,7 @@ const Consultations: React.FC = () => {
 
           {/* Recommendations */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Recommandations</label>
+            <label className="block font-medium mb-2">{t('consultations.form.recommendations')}</label>
             <InputTextarea
               value={formData.recommendations || ''}
               onChange={(e) => setFormData({ ...formData, recommendations: e.target.value })}
@@ -479,7 +481,7 @@ const Consultations: React.FC = () => {
 
           {/* Notes */}
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Notes</label>
+            <label className="block font-medium mb-2">{t('consultations.form.notes')}</label>
             <InputTextarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -491,11 +493,11 @@ const Consultations: React.FC = () => {
 
           {/* Vital Signs Section */}
           <div className="col-12">
-            <h3 className="text-lg font-semibold mt-2 mb-3">Signes vitaux</h3>
+            <h3 className="text-lg font-semibold mt-2 mb-3">{t('consultations.form.vitalSigns')}</h3>
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Tension artérielle</label>
+            <label className="block font-medium mb-2">{t('consultations.form.bloodPressure')}</label>
             <InputText
               value={formData.bloodPressure || ''}
               onChange={(e) => setFormData({ ...formData, bloodPressure: e.target.value })}
@@ -505,7 +507,7 @@ const Consultations: React.FC = () => {
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Poids (kg)</label>
+            <label className="block font-medium mb-2">{t('consultations.form.weight')}</label>
             <InputText
               value={formData.weight || ''}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
@@ -515,7 +517,7 @@ const Consultations: React.FC = () => {
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Température (°C)</label>
+            <label className="block font-medium mb-2">{t('consultations.form.temperature')}</label>
             <InputText
               value={formData.temperature || ''}
               onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
@@ -525,7 +527,7 @@ const Consultations: React.FC = () => {
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Fréquence cardiaque (bpm)</label>
+            <label className="block font-medium mb-2">{t('consultations.form.heartRate')}</label>
             <InputNumber
               value={formData.heartRate || null}
               onValueChange={(e) => setFormData({ ...formData, heartRate: e.value })}
@@ -535,7 +537,7 @@ const Consultations: React.FC = () => {
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Fréquence respiratoire</label>
+            <label className="block font-medium mb-2">{t('consultations.form.respiratoryRate')}</label>
             <InputNumber
               value={formData.respiratoryRate || null}
               onValueChange={(e) => setFormData({ ...formData, respiratoryRate: e.value })}
@@ -545,7 +547,7 @@ const Consultations: React.FC = () => {
           </div>
 
           <div className="col-12 md:col-4 field">
-            <label className="block font-medium mb-2">Saturation O₂ (%)</label>
+            <label className="block font-medium mb-2">{t('consultations.form.oxygenSaturation')}</label>
             <InputText
               value={formData.oxygenSaturation || ''}
               onChange={(e) => setFormData({ ...formData, oxygenSaturation: e.target.value })}

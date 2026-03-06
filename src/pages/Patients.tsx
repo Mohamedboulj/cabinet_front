@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patientService';
 import { getApiErrorMessage } from '../utils/errorUtils';
@@ -17,6 +18,7 @@ import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 
 const Patients: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +39,8 @@ const Patients: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les patients',
+        summary: t('common.error'),
+        detail: t('patients.loadError'),
       });
     } finally {
       setLoading(false);
@@ -58,8 +60,8 @@ const Patients: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Erreur lors de la recherche',
+        summary: t('common.error'),
+        detail: t('patients.searchError'),
       });
     } finally {
       setLoading(false);
@@ -85,15 +87,15 @@ const Patients: React.FC = () => {
         await patientService.updatePatient(editingPatient.id, formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Patient mis à jour',
+          summary: t('common.success'),
+          detail: t('patients.updated'),
         });
       } else {
         await patientService.createPatient(formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Patient créé',
+          summary: t('common.success'),
+          detail: t('patients.created'),
         });
       }
       setDialogVisible(false);
@@ -101,7 +103,7 @@ const Patients: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('common.error'),
         detail: getApiErrorMessage(error),
       });
     } finally {
@@ -111,8 +113,8 @@ const Patients: React.FC = () => {
 
   const confirmDelete = (patient: Patient) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer ${patient.lastName} ${patient.firstName} ?`,
-      header: 'Confirmation de suppression',
+      message: t('patients.confirmDeleteMessage', { name: `${patient.lastName} ${patient.firstName}` }),
+      header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(patient),
     });
@@ -123,15 +125,15 @@ const Patients: React.FC = () => {
       await patientService.deletePatient(patient.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Patient supprimé',
+        summary: t('common.success'),
+        detail: t('patients.deleted'),
       });
       loadPatients();
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, 'Impossible de supprimer le patient'),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('patients.deleteError')),
       });
     }
   };
@@ -142,19 +144,19 @@ const Patients: React.FC = () => {
         icon="pi pi-eye"
         className="p-button-rounded p-button-info p-button-sm"
         onClick={() => navigate(`/patients/${rowData.id}`)}
-        tooltip="Voir"
+        tooltip={t('common.view')}
       />
       <Button
         icon="pi pi-pencil"
         className="p-button-rounded p-button-warning p-button-sm"
         onClick={() => openEditDialog(rowData)}
-        tooltip="Modifier"
+        tooltip={t('common.edit')}
       />
       <Button
         icon="pi pi-trash"
         className="p-button-rounded p-button-danger p-button-sm"
         onClick={() => confirmDelete(rowData)}
-        tooltip="Supprimer"
+        tooltip={t('common.delete')}
         tooltipOptions={{ position: 'top' }}
       />
     </div>
@@ -169,14 +171,14 @@ const Patients: React.FC = () => {
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    return `${age} ans`;
+    return `${age} ${t('patients.years')}`;
   };
 
   const genderBodyTemplate = (rowData: Patient) => {
     if (rowData.gender === 'M') {
-      return <Tag icon="pi pi-male" value="Homme" className="bg-blue-100 text-blue-700" />;
+      return <Tag icon="pi pi-male" value={t('patients.male')} className="bg-blue-100 text-blue-700" />;
     } else if (rowData.gender === 'F') {
-      return <Tag icon="pi pi-female" value="Femme" className="bg-pink-100 text-pink-700" />;
+      return <Tag icon="pi pi-female" value={t('patients.female')} className="bg-pink-100 text-pink-700" />;
     }
     return '-';
   };
@@ -184,13 +186,13 @@ const Patients: React.FC = () => {
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
       <Button
-        label="Annuler"
+        label={t('common.cancel')}
         icon="pi pi-times"
         className="p-button-text"
         onClick={() => setDialogVisible(false)}
       />
       <Button
-        label={editingPatient ? 'Modifier' : 'Créer'}
+        label={editingPatient ? t('common.edit') : t('common.create')}
         icon="pi pi-check"
         loading={submitting}
         onClick={handleSubmit}
@@ -204,9 +206,9 @@ const Patients: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Gestion des Patients</h1>
+        <h1 className="text-3xl font-bold m-0">{t('patients.title')}</h1>
         <Button
-          label="Nouveau patient"
+          label={t('patients.newPatient')}
           icon="pi pi-plus"
           className="p-button-success"
           onClick={openNewDialog}
@@ -220,7 +222,7 @@ const Patients: React.FC = () => {
           <InputText
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher un patient..."
+            placeholder={t('patients.searchPlaceholder')}
             className="w-full"
             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -231,24 +233,24 @@ const Patients: React.FC = () => {
 
       {/* Patients Table */}
       {loading ? (
-        <DataTableSkeleton headers={['ID', 'Nom', 'Prénom', 'CIN', 'Téléphone', 'Âge', 'Sexe', 'Actions']} />
+        <DataTableSkeleton headers={[t('patients.headers.id'), t('patients.headers.lastName'), t('patients.headers.firstName'), t('patients.headers.cin'), t('patients.headers.phone'), t('patients.headers.age'), t('patients.headers.gender'), t('patients.headers.actions')]} />
       ) : (
         <DataTable
           value={patients}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucun patient trouvé"
+          emptyMessage={t('patients.noPatients')}
           className="shadow-2"
         >
-          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-          <Column field="lastName" header="Nom" sortable />
-          <Column field="firstName" header="Prénom" sortable />
-          <Column field="cin" header="CIN" sortable />
-          <Column field="phone" header="Téléphone" />
-          <Column field="age" header="Âge" body={ageBodyTemplate} sortable />
-          <Column field="gender" header="Sexe" body={genderBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+          <Column field="id" header={t('patients.headers.id')} sortable style={{ width: '5rem' }} />
+          <Column field="lastName" header={t('patients.headers.lastName')} sortable />
+          <Column field="firstName" header={t('patients.headers.firstName')} sortable />
+          <Column field="cin" header={t('patients.headers.cin')} sortable />
+          <Column field="phone" header={t('patients.headers.phone')} />
+          <Column field="age" header={t('patients.headers.age')} body={ageBodyTemplate} sortable />
+          <Column field="gender" header={t('patients.headers.gender')} body={genderBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header={t('patients.headers.actions')} style={{ width: '10rem' }} />
         </DataTable>
       )}
 
@@ -256,13 +258,13 @@ const Patients: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingPatient ? 'Modifier le patient' : 'Nouveau patient'}
+        header={editingPatient ? t('patients.editDialog') : t('patients.newDialog')}
         className="w-11/12 md:w-6 lg:w-8"
         footer={dialogFooter}
       >
         <div className="grid">
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Nom *</label>
+            <label className="block font-medium mb-2">{t('patients.form.lastName')}</label>
             <InputText
               value={formData.lastName || ''}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
@@ -270,7 +272,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Prénom *</label>
+            <label className="block font-medium mb-2">{t('patients.form.firstName')}</label>
             <InputText
               value={formData.firstName || ''}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -278,7 +280,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">CIN</label>
+            <label className="block font-medium mb-2">{t('patients.form.cin')}</label>
             <InputText
               value={formData.cin || ''}
               onChange={(e) => setFormData({ ...formData, cin: e.target.value })}
@@ -286,7 +288,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Téléphone *</label>
+            <label className="block font-medium mb-2">{t('patients.form.phone')}</label>
             <InputText
               value={formData.phone || ''}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -294,7 +296,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Email</label>
+            <label className="block font-medium mb-2">{t('patients.form.email')}</label>
             <InputText
               type="email"
               value={formData.email || ''}
@@ -303,7 +305,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Date de naissance</label>
+            <label className="block font-medium mb-2">{t('patients.form.birthDate')}</label>
             <Calendar
               value={formData.birthDate ? new Date(formData.birthDate) : null}
               onChange={(e) => setFormData({ ...formData, birthDate: e.value?.toISOString() })}
@@ -313,20 +315,20 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Sexe</label>
+            <label className="block font-medium mb-2">{t('patients.form.gender')}</label>
             <Dropdown
               value={formData.gender || ''}
               options={[
-                { label: 'Homme', value: 'M' },
-                { label: 'Femme', value: 'F' },
+                { label: t('patients.male'), value: 'M' },
+                { label: t('patients.female'), value: 'F' },
               ]}
               onChange={(e) => setFormData({ ...formData, gender: e.value })}
-              placeholder="Sélectionner"
+              placeholder={t('common.select')}
               className="w-full"
             />
           </div>
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Groupe sanguin</label>
+            <label className="block font-medium mb-2">{t('patients.form.bloodType')}</label>
             <Dropdown
               value={formData.bloodType || ''}
               options={[
@@ -340,12 +342,12 @@ const Patients: React.FC = () => {
                 { label: 'O-', value: 'O-' },
               ]}
               onChange={(e) => setFormData({ ...formData, bloodType: e.value })}
-              placeholder="Sélectionner"
+              placeholder={t('common.select')}
               className="w-full"
             />
           </div>
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Adresse</label>
+            <label className="block font-medium mb-2">{t('patients.form.address')}</label>
             <InputText
               value={formData.address || ''}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -353,7 +355,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Antécédents médicaux</label>
+            <label className="block font-medium mb-2">{t('patients.form.medicalHistory')}</label>
             <textarea
               value={formData.medicalHistory || ''}
               onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
@@ -362,7 +364,7 @@ const Patients: React.FC = () => {
             />
           </div>
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Allergies</label>
+            <label className="block font-medium mb-2">{t('patients.form.allergies')}</label>
             <textarea
               value={formData.allergies || ''}
               onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}

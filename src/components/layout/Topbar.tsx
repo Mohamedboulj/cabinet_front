@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import type { User } from '../../types';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 interface TopbarProps {
   onMenuToggle: () => void;
@@ -15,6 +17,7 @@ interface TopbarProps {
 const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { t } = useTranslation();
   const menuRef = useRef<Menu>(null);
   const [notifications] = useState(0);
 
@@ -24,7 +27,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
 
   const userMenuItems = [
     {
-      label: 'Mon Profil',
+      label: t('topbar.myProfile'),
       icon: 'pi pi-user',
       command: () => navigate('/settings'),
     },
@@ -32,11 +35,17 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
       separator: true,
     },
     {
-      label: 'Déconnexion',
+      label: t('topbar.logout'),
       icon: 'pi pi-sign-out',
       command: handleLogout,
     },
   ];
+
+  const getRoleLabel = () => {
+    if (user?.roles.includes('ROLE_ADMIN')) return t('topbar.admin');
+    if (user?.roles.includes('ROLE_MEDECIN')) return t('topbar.doctor');
+    return t('topbar.secretary');
+  };
 
   const start = (
     <div className="flex align-items-center">
@@ -54,6 +63,8 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
 
   const end = (
     <div className="flex align-items-center gap-2">
+      <LanguageSwitcher />
+
       <Button
         icon="pi pi-bell"
         className="p-button-text p-button-rounded"
@@ -70,7 +81,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
         />
         <div className="hidden md:block">
           <div className="font-medium">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</div>
-          <div className="text-sm text-500">{user?.roles.includes('ROLE_ADMIN') ? 'Administrateur' : user?.roles.includes('ROLE_MEDECIN') ? 'Médecin' : 'Secrétaire'}</div>
+          <div className="text-sm text-500">{getRoleLabel()}</div>
         </div>
         <i className="pi pi-chevron-down text-sm"></i>
       </div>
@@ -97,3 +108,4 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuToggle, user }) => {
 };
 
 export default Topbar;
+

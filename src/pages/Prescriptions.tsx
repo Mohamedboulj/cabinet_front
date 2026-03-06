@@ -18,8 +18,10 @@ import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 import { Dropdown } from 'primereact/dropdown';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Checkbox } from 'primereact/checkbox';
+import { useTranslation } from 'react-i18next';
 
 const Prescriptions: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -47,8 +49,8 @@ const Prescriptions: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les ordonnances',
+        summary: t('common.error'),
+        detail: t('prescriptions.loadError'),
       });
     } finally {
       setLoading(false);
@@ -76,8 +78,8 @@ const Prescriptions: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Erreur lors de la recherche',
+        summary: t('common.error'),
+        detail: t('prescriptions.searchError'),
       });
     } finally {
       setLoading(false);
@@ -136,8 +138,8 @@ const Prescriptions: React.FC = () => {
     if (!formData.medicationName || !formData.consultationId) {
       toast.current?.show({
         severity: 'warn',
-        summary: 'Attention',
-        detail: 'Veuillez remplir les champs obligatoires (consultation et médicament)',
+        summary: t('common.warning'),
+        detail: t('prescriptions.requiredFields'),
       });
       return;
     }
@@ -148,15 +150,15 @@ const Prescriptions: React.FC = () => {
         await prescriptionService.updatePrescription(editingPrescription.id, formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Ordonnance mise à jour',
+          summary: t('common.success'),
+          detail: t('prescriptions.updated'),
         });
       } else {
         await prescriptionService.createPrescription(formData);
         toast.current?.show({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Ordonnance créée',
+          summary: t('common.success'),
+          detail: t('prescriptions.created'),
         });
       }
       setDialogVisible(false);
@@ -164,7 +166,7 @@ const Prescriptions: React.FC = () => {
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('common.error'),
         detail: getApiErrorMessage(error),
       });
     } finally {
@@ -174,8 +176,8 @@ const Prescriptions: React.FC = () => {
 
   const confirmDelete = (prescription: Prescription) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir supprimer l'ordonnance de ${prescription.medicationName} ?`,
-      header: 'Confirmation de suppression',
+      message: t('prescriptions.confirmDeleteMessage', { name: prescription.medicationName }),
+      header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(prescription),
     });
@@ -186,15 +188,15 @@ const Prescriptions: React.FC = () => {
       await prescriptionService.deletePrescription(prescription.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Ordonnance supprimée',
+        summary: t('common.success'),
+        detail: t('prescriptions.deleted'),
       });
       loadPrescriptions();
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, "Impossible de supprimer l'ordonnance"),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('prescriptions.deleteError')),
       });
     }
   };
@@ -202,7 +204,6 @@ const Prescriptions: React.FC = () => {
   // Body templates
   const patientBodyTemplate = (rowData: Prescription) => {
     const patient = rowData.consultation?.patient;
-    console.log(patient)
     return patient ? `${patient.lastName} ${patient.firstName}` : '—';
   };
 
@@ -212,9 +213,9 @@ const Prescriptions: React.FC = () => {
 
   const renewableBodyTemplate = (rowData: Prescription) => {
     return rowData.isRenewable ? (
-      <Tag value="Renouvelable" severity="success" />
+      <Tag value={t('prescriptions.renewable')} severity="success" />
     ) : (
-      <Tag value="Non renouvelable" severity="warning" />
+      <Tag value={t('prescriptions.notRenewable')} severity="warning" />
     );
   };
 
@@ -224,18 +225,18 @@ const Prescriptions: React.FC = () => {
         icon="pi pi-pencil"
         className="p-button-rounded p-button-warning p-button-sm"
         onClick={() => openEditDialog(rowData)}
-        tooltip="Modifier"
+        tooltip={t('common.edit')}
       />
       <Button
         icon="pi pi-trash"
         className="p-button-rounded p-button-danger p-button-sm"
         onClick={() => confirmDelete(rowData)}
-        tooltip="Supprimer"
+        tooltip={t('common.delete')}
       />
       <Button
         icon="pi pi-print"
         className="p-button-rounded p-button-secondary p-button-sm"
-        tooltip="Imprimer"
+        tooltip={t('common.print')}
       />
     </div>
   );
@@ -246,12 +247,12 @@ const Prescriptions: React.FC = () => {
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
     const date = new Date(option.createdAt).toLocaleDateString('fr-FR');
     return (
-      <span>{option.referenceNumber} — {patientName} — {option.reason || 'Sans motif'} ({date})</span>
+      <span>{option.referenceNumber} — {patientName} — {option.reason || t('prescriptions.form.noReason')} ({date})</span>
     );
   };
 
   const selectedConsultationTemplate = (value: any) => {
-    if (!value) return <span>Sélectionner une consultation</span>;
+    if (!value) return <span>{t('prescriptions.form.selectConsultation')}</span>;
     // PrimeReact valueTemplate passes the full option object, not just the optionValue
     const consultation = typeof value === 'object'
       ? value as Consultation
@@ -259,19 +260,19 @@ const Prescriptions: React.FC = () => {
     if (!consultation) return <span>Consultation #{value}</span>;
     const patient = consultation.patient;
     const patientName = patient ? `${patient.lastName} ${patient.firstName}` : 'N/A';
-    return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || 'Sans motif'}</span>;
+    return <span>{consultation.referenceNumber} — {patientName} — {consultation.reason || t('prescriptions.form.noReason')}</span>;
   };
 
   const dialogFooter = (
     <div className="flex justify-content-end gap-2">
       <Button
-        label="Annuler"
+        label={t('common.cancel')}
         icon="pi pi-times"
         className="p-button-text"
         onClick={() => setDialogVisible(false)}
       />
       <Button
-        label={editingPrescription ? 'Modifier' : 'Créer'}
+        label={editingPrescription ? t('common.edit') : t('common.create')}
         icon="pi pi-check"
         loading={submitting}
         onClick={handleSubmit}
@@ -285,9 +286,9 @@ const Prescriptions: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Ordonnances</h1>
+        <h1 className="text-3xl font-bold m-0">{t('prescriptions.title')}</h1>
         <Button
-          label="Nouvelle ordonnance"
+          label={t('prescriptions.newPrescription')}
           icon="pi pi-plus"
           className="p-button-success"
           onClick={openNewDialog}
@@ -301,7 +302,7 @@ const Prescriptions: React.FC = () => {
           <InputText
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une ordonnance..."
+            placeholder={t('prescriptions.searchPlaceholder')}
             className="w-full"
             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -312,25 +313,25 @@ const Prescriptions: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <DataTableSkeleton headers={['ID', 'Patient', 'Médicament', 'Dosage', 'Fréquence', 'Durée', 'Renouvelable', 'Date', 'Actions']} />
+        <DataTableSkeleton headers={[t('prescriptions.headers.id'), t('prescriptions.headers.patient'), t('prescriptions.headers.medication'), t('prescriptions.headers.dosage'), t('prescriptions.headers.frequency'), t('prescriptions.headers.duration'), t('prescriptions.headers.renewable'), t('prescriptions.headers.date'), t('prescriptions.headers.actions')]} />
       ) : (
         <DataTable
           value={prescriptions}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucune ordonnance trouvée"
+          emptyMessage={t('prescriptions.noPrescriptions')}
           className="shadow-2"
         >
-          <Column field="id" header="ID" sortable style={{ width: '5rem' }} />
-          <Column header="Patient" body={patientBodyTemplate} sortable />
-          <Column field="medicationName" header="Médicament" sortable />
-          <Column field="dosage" header="Dosage" />
-          <Column field="frequency" header="Fréquence" />
-          <Column field="duration" header="Durée" />
-          <Column header="Renouvelable" body={renewableBodyTemplate} style={{ width: '10rem' }} />
-          <Column field="createdAt" header="Date" body={dateBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+          <Column field="id" header={t('prescriptions.headers.id')} sortable style={{ width: '5rem' }} />
+          <Column header={t('prescriptions.headers.patient')} body={patientBodyTemplate} sortable />
+          <Column field="medicationName" header={t('prescriptions.headers.medication')} sortable />
+          <Column field="dosage" header={t('prescriptions.headers.dosage')} />
+          <Column field="frequency" header={t('prescriptions.headers.frequency')} />
+          <Column field="duration" header={t('prescriptions.headers.duration')} />
+          <Column header={t('prescriptions.headers.renewable')} body={renewableBodyTemplate} style={{ width: '10rem' }} />
+          <Column field="createdAt" header={t('prescriptions.headers.date')} body={dateBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header={t('prescriptions.headers.actions')} style={{ width: '10rem' }} />
         </DataTable>
       )}
 
@@ -338,24 +339,24 @@ const Prescriptions: React.FC = () => {
       <Dialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        header={editingPrescription ? "Modifier l'ordonnance" : 'Nouvelle ordonnance'}
+        header={editingPrescription ? t('prescriptions.editDialog') : t('prescriptions.newDialog')}
         className="w-11/12 md:w-8 lg:w-8"
         footer={dialogFooter}
       >
         <div className="grid">
           {/* Consultation */}
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Consultation *</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.consultation')}</label>
             <Dropdown
               value={formData.consultationId}
               options={consultations}
               optionLabel="reason"
               optionValue="id"
               onChange={(e) => setFormData({ ...formData, consultationId: e.value })}
-              placeholder="Sélectionner une consultation"
+              placeholder={t('prescriptions.form.selectConsultation')}
               className="w-full"
               filter
-              filterPlaceholder="Rechercher..."
+              filterPlaceholder={t('common.searchPlaceholder')}
               itemTemplate={consultationOptionTemplate}
               valueTemplate={selectedConsultationTemplate}
               disabled={!!editingPrescription}
@@ -364,7 +365,7 @@ const Prescriptions: React.FC = () => {
 
           {/* Medication AutoComplete */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Médicament *</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.medication')}</label>
             <AutoComplete
               value={selectedMedicament}
               suggestions={medicamentSuggestions}
@@ -377,7 +378,7 @@ const Prescriptions: React.FC = () => {
                 }
               }}
               onSelect={onMedicamentSelect}
-              placeholder="Rechercher un médicament..."
+              placeholder={t('prescriptions.form.searchMedication')}
               className="w-full"
               dropdown
               forceSelection={false}
@@ -392,29 +393,29 @@ const Prescriptions: React.FC = () => {
 
           {/* Dosage */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Dosage</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.dosage')}</label>
             <InputText
               value={formData.dosage || ''}
               onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
               className="w-full"
-              placeholder="Ex: 400mg"
+              placeholder={t('prescriptions.form.dosagePlaceholder')}
             />
           </div>
 
           {/* Pharmaceutical Form */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Forme pharmaceutique</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.pharmaceuticalForm')}</label>
             <InputText
               value={formData.pharmaceuticalForm || ''}
               onChange={(e) => setFormData({ ...formData, pharmaceuticalForm: e.target.value })}
               className="w-full"
-              placeholder="Ex: Comprimé, Sirop..."
+              placeholder={t('prescriptions.form.pharmaceuticalFormPlaceholder')}
             />
           </div>
 
           {/* Quantity */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Quantité</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.quantity')}</label>
             <InputNumber
               value={formData.quantity}
               onValueChange={(e) => setFormData({ ...formData, quantity: e.value })}
@@ -425,36 +426,36 @@ const Prescriptions: React.FC = () => {
 
           {/* Frequency */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Fréquence</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.frequency')}</label>
             <InputText
               value={formData.frequency || ''}
               onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
               className="w-full"
-              placeholder="Ex: 3 fois par jour"
+              placeholder={t('prescriptions.form.frequencyPlaceholder')}
             />
           </div>
 
           {/* Duration */}
           <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">Durée</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.duration')}</label>
             <InputText
               value={formData.duration || ''}
               onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
               className="w-full"
-              placeholder="Ex: 7 jours"
+              placeholder={t('prescriptions.form.durationPlaceholder')}
             />
           </div>
 
           {/* Instructions */}
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Instructions</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.instructions')}</label>
             <InputTextarea
               value={formData.instructions || ''}
               onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
               className="w-full"
               rows={3}
               autoResize
-              placeholder="Instructions pour le patient..."
+              placeholder={t('prescriptions.form.instructionsPlaceholder')}
             />
           </div>
 
@@ -466,20 +467,20 @@ const Prescriptions: React.FC = () => {
                 checked={formData.isRenewable || false}
                 onChange={(e) => setFormData({ ...formData, isRenewable: e.checked })}
               />
-              <label htmlFor="isRenewable" className="font-medium cursor-pointer">Ordonnance renouvelable</label>
+              <label htmlFor="isRenewable" className="font-medium cursor-pointer">{t('prescriptions.form.isRenewable')}</label>
             </div>
           </div>
 
           {/* Notes */}
           <div className="col-12 field">
-            <label className="block font-medium mb-2">Notes</label>
+            <label className="block font-medium mb-2">{t('prescriptions.form.notes')}</label>
             <InputTextarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full"
               rows={2}
               autoResize
-              placeholder="Notes additionnelles..."
+              placeholder={t('prescriptions.form.notesPlaceholder')}
             />
           </div>
         </div>

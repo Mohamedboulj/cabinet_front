@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '../services/appointmentService';
 import { getApiErrorMessage } from '../utils/errorUtils';
@@ -13,6 +14,7 @@ import DataTableSkeleton from '../components/skeletons/DataTableSkeleton';
 
 const Appointments: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const toast = useRef<Toast>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,8 +30,8 @@ const Appointments: React.FC = () => {
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger les rendez-vous',
+        summary: t('common.error'),
+        detail: t('appointments.loadError'),
       });
     } finally {
       setLoading(false);
@@ -38,8 +40,8 @@ const Appointments: React.FC = () => {
 
   const confirmCancel = (appointment: Appointment) => {
     confirmDialog({
-      message: `Êtes-vous sûr de vouloir annuler ce rendez-vous ?`,
-      header: 'Confirmation',
+      message: t('appointments.cancelConfirm'),
+      header: t('common.confirmation'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleCancel(appointment),
     });
@@ -50,15 +52,15 @@ const Appointments: React.FC = () => {
       await appointmentService.cancelAppointment(appointment.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Rendez-vous annulé',
+        summary: t('common.success'),
+        detail: t('appointments.cancelled'),
       });
       loadAppointments();
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, 'Impossible d\'annuler le rendez-vous'),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('appointments.cancelError')),
       });
     }
   };
@@ -68,15 +70,15 @@ const Appointments: React.FC = () => {
       await appointmentService.confirmAppointment(appointment.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Rendez-vous confirmé',
+        summary: t('common.success'),
+        detail: t('appointments.confirmed'),
       });
       loadAppointments();
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, 'Impossible de confirmer le rendez-vous'),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('appointments.confirmError')),
       });
     }
   };
@@ -86,27 +88,27 @@ const Appointments: React.FC = () => {
       await appointmentService.completeAppointment(appointment.id);
       toast.current?.show({
         severity: 'success',
-        summary: 'Succès',
-        detail: 'Rendez-vous terminé',
+        summary: t('common.success'),
+        detail: t('appointments.completed'),
       });
       loadAppointments();
     } catch (error) {
       toast.current?.show({
         severity: 'error',
-        summary: 'Erreur',
-        detail: getApiErrorMessage(error, 'Impossible de terminer le rendez-vous'),
+        summary: t('common.error'),
+        detail: getApiErrorMessage(error, t('appointments.completeError')),
       });
     }
   };
 
   const statusBodyTemplate = (rowData: Appointment) => {
     const statusMap: Record<string, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' }> = {
-      'SCHEDULED': { label: 'Planifié', severity: 'info' },
-      'CONFIRMED': { label: 'Confirmé', severity: 'success' },
-      'IN_PROGRESS': { label: 'En cours', severity: 'warning' },
-      'COMPLETED': { label: 'Terminé', severity: 'success' },
-      'CANCELLED': { label: 'Annulé', severity: 'danger' },
-      'NO_SHOW': { label: 'Non présenté', severity: 'secondary' },
+      'SCHEDULED': { label: t('status.scheduled'), severity: 'info' },
+      'CONFIRMED': { label: t('status.confirmed'), severity: 'success' },
+      'IN_PROGRESS': { label: t('status.inProgress'), severity: 'warning' },
+      'COMPLETED': { label: t('status.completed'), severity: 'success' },
+      'CANCELLED': { label: t('status.cancelled'), severity: 'danger' },
+      'NO_SHOW': { label: t('status.noShow'), severity: 'secondary' },
     };
     const status = statusMap[rowData.status] || { label: rowData.status, severity: 'info' };
     return <Tag value={status.label} severity={status.severity} />;
@@ -134,7 +136,7 @@ const Appointments: React.FC = () => {
             icon="pi pi-check"
             className="p-button-rounded p-button-success p-button-sm"
             onClick={() => handleConfirm(rowData)}
-            tooltip="Confirmer"
+            tooltip={t('common.confirm')}
           />
         )}
         {canComplete && (
@@ -142,7 +144,7 @@ const Appointments: React.FC = () => {
             icon="pi pi-check-circle"
             className="p-button-rounded p-button-info p-button-sm"
             onClick={() => handleComplete(rowData)}
-            tooltip="Terminer"
+            tooltip={t('common.complete')}
           />
         )}
         {canCancel && (
@@ -150,7 +152,7 @@ const Appointments: React.FC = () => {
             icon="pi pi-times"
             className="p-button-rounded p-button-danger p-button-sm"
             onClick={() => confirmCancel(rowData)}
-            tooltip="Annuler"
+            tooltip={t('common.cancel')}
           />
         )}
       </div>
@@ -163,16 +165,16 @@ const Appointments: React.FC = () => {
       <ConfirmDialog />
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Rendez-vous</h1>
+        <h1 className="text-3xl font-bold m-0">{t('appointments.title')}</h1>
         <div className="flex gap-2">
           <Button
-            label="Calendrier"
+            label={t('appointments.calendarBtn')}
             icon="pi pi-calendar"
             className="p-button-secondary"
             onClick={() => navigate('/calendar')}
           />
           <Button
-            label="Nouveau RDV"
+            label={t('appointments.newAppointment')}
             icon="pi pi-plus"
             className="p-button-success"
             onClick={() => navigate('/calendar', { state: { openNew: true } })}
@@ -181,25 +183,25 @@ const Appointments: React.FC = () => {
       </div>
 
       {loading ? (
-        <DataTableSkeleton headers={['ID', 'Patient', 'Médecin', 'Date', 'Motif', 'Type', 'Statut', 'Actions']} />
+        <DataTableSkeleton headers={[t('appointments.headers.patient'), t('appointments.headers.doctor'), t('appointments.headers.date'), t('appointments.headers.reason'), t('appointments.headers.type'), t('appointments.headers.status'), t('appointments.headers.actions')]} />
       ) : (
         <DataTable
           value={appointments}
           paginator
           rows={10}
           rowsPerPageOptions={[10, 25, 50]}
-          emptyMessage="Aucun rendez-vous trouvé"
+          emptyMessage={t('appointments.noAppointments')}
           className="shadow-2"
           onRowClick={(e) => navigate(`/appointments/${e.data.id}`)}
           rowClassName={() => 'cursor-pointer'}
         >
-          <Column field="patient.lastName" header="Patient" body={(row: Appointment) => `${row.patient.firstName} ${row.patient.lastName}`} sortable />
-          <Column field="doctor.lastName" header="Médecin" body={(row: Appointment) => `${row.doctor.firstName} ${row.doctor.lastName}`} sortable />
-          <Column field="startAt" header="Date" body={dateBodyTemplate} sortable />
-          <Column field="reason" header="Motif" />
-          <Column field="type" header="Type" sortable />
-          <Column field="status" header="Statut" body={statusBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header="Actions" style={{ width: '10rem' }} />
+          <Column field="patient.lastName" header={t('appointments.headers.patient')} body={(row: Appointment) => `${row.patient.firstName} ${row.patient.lastName}`} sortable />
+          <Column field="doctor.lastName" header={t('appointments.headers.doctor')} body={(row: Appointment) => `${row.doctor.firstName} ${row.doctor.lastName}`} sortable />
+          <Column field="startAt" header={t('appointments.headers.date')} body={dateBodyTemplate} sortable />
+          <Column field="reason" header={t('appointments.headers.reason')} />
+          <Column field="type" header={t('appointments.headers.type')} sortable />
+          <Column field="status" header={t('appointments.headers.status')} body={statusBodyTemplate} sortable />
+          <Column body={actionBodyTemplate} header={t('appointments.headers.actions')} style={{ width: '10rem' }} />
         </DataTable>
       )}
     </div>

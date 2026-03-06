@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AuditLog } from '../types';
 import { Card } from 'primereact/card';
 import { Skeleton } from 'primereact/skeleton';
@@ -12,6 +13,18 @@ interface FieldChange {
     field: string;
     oldValue: any;
     newValue: any;
+}
+
+/**
+ * Map entityType (from backend) to the i18n key segment.
+ */
+function entityTypeToI18nKey(entityType: string): string {
+    const map: Record<string, string> = {
+        'App\\Entity\\Patient': 'patient',
+        'App\\Entity\\Appointment': 'appointment',
+        'App\\Entity\\Consultation': 'consultation',
+    };
+    return map[entityType] ?? entityType.toLowerCase();
 }
 
 /**
@@ -66,19 +79,22 @@ function getTimeForLog(log: AuditLog): string {
 /**
  * Get the display label, icon, and background class for an action.
  */
-function getActionStyle(action: string): { label: string; icon: string; bgClass: string } {
-    switch (action) {
-        case 'CREATE':
-            return { label: 'Création', icon: 'pi pi-plus', bgClass: 'bg-green-50 text-green-700' };
-        case 'IMPORT':
-            return { label: 'Importation', icon: 'pi pi-plus', bgClass: 'bg-green-50 text-green-700' };
-        case 'UPDATE':
-            return { label: 'Mise à jour', icon: 'pi pi-pencil', bgClass: 'bg-yellow-50 text-yellow-700' };
-        case 'DELETE':
-            return { label: 'Suppression', icon: 'pi pi-trash', bgClass: 'bg-red-50 text-red-700' };
-        default:
-            return { label: action, icon: 'pi pi-info-circle', bgClass: 'surface-100 text-700' };
-    }
+function useActionStyle() {
+    const { t } = useTranslation();
+    return (action: string): { label: string; icon: string; bgClass: string } => {
+        switch (action) {
+            case 'CREATE':
+                return { label: t('activityHistory.action.create'), icon: 'pi pi-plus', bgClass: 'bg-green-50 text-green-700' };
+            case 'IMPORT':
+                return { label: t('activityHistory.action.import'), icon: 'pi pi-plus', bgClass: 'bg-green-50 text-green-700' };
+            case 'UPDATE':
+                return { label: t('activityHistory.action.update'), icon: 'pi pi-pencil', bgClass: 'bg-yellow-50 text-yellow-700' };
+            case 'DELETE':
+                return { label: t('activityHistory.action.delete'), icon: 'pi pi-trash', bgClass: 'bg-red-50 text-red-700' };
+            default:
+                return { label: action, icon: 'pi pi-info-circle', bgClass: 'surface-100 text-700' };
+        }
+    };
 }
 
 /**
@@ -124,6 +140,9 @@ const ActivityHistorySkeleton: React.FC = () => (
 );
 
 const ActivityHistory: React.FC<ActivityHistoryProps> = ({ logs, loading }) => {
+    const { t } = useTranslation();
+    const getActionStyle = useActionStyle();
+
     if (loading) {
         return <ActivityHistorySkeleton />;
     }
@@ -133,7 +152,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ logs, loading }) => {
             <Card className="shadow-2">
                 <div className="text-center text-500 py-5">
                     <i className="pi pi-history text-4xl mb-3" style={{ display: 'block' }}></i>
-                    Aucun historique disponible
+                    {t('activityHistory.emptyState')}
                 </div>
             </Card>
         );
@@ -173,7 +192,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ logs, loading }) => {
                                         {style.label}
                                     </span>
                                     <span className="text-600 text-sm">
-                                        par <strong>{log.user}</strong> à {getTimeForLog(log)}
+                                        {t('activityHistory.performer')} <strong>{log.user}</strong> {t('activityHistory.at')} {getTimeForLog(log)}
                                     </span>
                                 </div>
 
@@ -182,7 +201,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ logs, loading }) => {
                                     <div className="ml-2 mt-2" style={{ display: 'grid', gridTemplateColumns: '300px auto auto 1fr', gap: '0.25rem 3rem', alignItems: 'center' }}>
                                         {changes.map((change, idx) => (
                                             <React.Fragment key={idx}>
-                                                <span className="font-medium text-700 text-sm">{change.field}:</span>
+                                                <span className="font-medium text-700 text-sm">{t(`activityHistory.fieldLabels.${entityTypeToI18nKey(log.entityType)}.${change.field}`, change.field)}</span>
                                                 <div className="text-gray-300 text-sm w-max-5">{change.oldValue ?? '—'}</div>
                                                 <i className="pi pi-arrow-right text-400" style={{ fontSize: '0.7rem' }}></i>
                                                 <div className="font-medium text-sm w-auto">{change.newValue ?? '—'}</div>

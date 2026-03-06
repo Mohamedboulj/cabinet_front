@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { dashboardService } from '../services/dashboardService';
 import type { DashboardStats } from '../types';
 import { Card } from 'primereact/card';
@@ -10,6 +11,7 @@ import { getCurrency } from '../utils/currencyUtils';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -60,12 +62,12 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <div className="flex justify-content-between align-items-center mb-4">
-        <h1 className="text-3xl font-bold m-0">Tableau de bord</h1>
+        <h1 className="text-3xl font-bold m-0">{t('dashboard.title')}</h1>
         <Button
           icon="pi pi-refresh"
           className="p-button-text"
           onClick={loadStats}
-          tooltip="Actualiser"
+          tooltip={t('common.refresh')}
         />
       </div>
 
@@ -74,9 +76,9 @@ const Dashboard: React.FC = () => {
         {/* Patients */}
         <div className="col-12 md:col-6 lg:col-3">
           <StatCard
-            title="Total Patients"
+            title={t('dashboard.totalPatients')}
             value={stats?.patients.total || 0}
-            subtitle={`+${stats?.patients.newThisMonth || 0} ce mois`}
+            subtitle={t('dashboard.newThisMonth', { count: stats?.patients.newThisMonth || 0 })}
             icon="pi-users"
             color="#3B82F6"
             onClick={() => navigate('/patients')}
@@ -86,9 +88,9 @@ const Dashboard: React.FC = () => {
         {/* Appointments Today */}
         <div className="col-12 md:col-6 lg:col-3">
           <StatCard
-            title="RDV Aujourd'hui"
+            title={t('dashboard.appointmentsToday')}
             value={stats?.appointments.today || 0}
-            subtitle={`${stats?.appointments.thisMonth.completed || 0} complétés ce mois`}
+            subtitle={t('dashboard.completedThisMonth', { count: stats?.appointments.thisMonth.completed || 0 })}
             icon="pi-calendar"
             color="#10B981"
             onClick={() => navigate('/appointments')}
@@ -98,9 +100,9 @@ const Dashboard: React.FC = () => {
         {/* Consultations Today */}
         <div className="col-12 md:col-6 lg:col-3">
           <StatCard
-            title="Consultations"
+            title={t('dashboard.consultationsTitle')}
             value={stats?.consultations.today || 0}
-            subtitle={`${stats?.consultations.thisMonth.unpaid || 0} non payées`}
+            subtitle={t('dashboard.unpaidCount', { count: stats?.consultations.thisMonth.unpaid || 0 })}
             icon="pi-heart"
             color="#F59E0B"
             onClick={() => navigate('/consultations')}
@@ -110,9 +112,9 @@ const Dashboard: React.FC = () => {
         {/* Revenue */}
         <div className="col-12 md:col-6 lg:col-3">
           <StatCard
-            title="Revenus du mois"
+            title={t('dashboard.monthlyRevenue')}
             value={`${(stats?.invoices.thisMonth.paidAmount || 0).toLocaleString()} ${getCurrency()}`}
-            subtitle={`${stats?.invoices.unpaidCount || 0} factures impayées`}
+            subtitle={t('dashboard.unpaidInvoices', { count: stats?.invoices.unpaidCount || 0 })}
             icon="pi-money-bill"
             color="#8B5CF6"
             onClick={() => navigate('/invoices')}
@@ -122,28 +124,28 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="mt-5">
-        <h2 className="text-xl font-semibold mb-3">Actions rapides</h2>
+        <h2 className="text-xl font-semibold mb-3">{t('dashboard.quickActions')}</h2>
         <div className="flex flex-wrap gap-2">
           <Button
-            label="Nouveau patient"
+            label={t('dashboard.newPatient')}
             icon="pi pi-user-plus"
             className="p-button-success"
             onClick={() => navigate('/patients', { state: { openNew: true } })}
           />
           <Button
-            label="Nouveau rendez-vous"
+            label={t('dashboard.newAppointment')}
             icon="pi pi-calendar-plus"
             className="p-button-info"
             onClick={() => navigate('/calendar', { state: { openNew: true } })}
           />
           <Button
-            label="Nouvelle consultation"
+            label={t('dashboard.newConsultation')}
             icon="pi pi-file-edit"
             className="p-button-warning"
             onClick={() => navigate('/consultations', { state: { openNew: true } })}
           />
           <Button
-            label="Nouvelle facture"
+            label={t('dashboard.newInvoice')}
             icon="pi pi-file-o"
             className="p-button-help"
             onClick={() => navigate('/invoices', { state: { openNew: true } })}
@@ -154,12 +156,12 @@ const Dashboard: React.FC = () => {
       {/* Recent Activity */}
       <div className="grid mt-5">
         <div className="col-12 lg:col-6">
-          <Card title="Prochains rendez-vous" className="shadow-2 h-full">
+          <Card title={t('dashboard.upcomingAppointments')} className="shadow-2 h-full">
             <UpcomingAppointments />
           </Card>
         </div>
         <div className="col-12 lg:col-6">
-          <Card title="Factures impayées" className="shadow-2 h-full">
+          <Card title={t('dashboard.unpaidInvoicesTitle')} className="shadow-2 h-full">
             <UnpaidInvoices />
           </Card>
         </div>
@@ -170,6 +172,7 @@ const Dashboard: React.FC = () => {
 
 const UpcomingAppointments: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -193,7 +196,7 @@ const UpcomingAppointments: React.FC = () => {
   }
 
   if (appointments.length === 0) {
-    return <p className="text-500 text-center py-3">Aucun rendez-vous à venir</p>;
+    return <p className="text-500 text-center py-3">{t('dashboard.noUpcoming')}</p>;
   }
 
   return (
@@ -219,7 +222,7 @@ const UpcomingAppointments: React.FC = () => {
           <div className="flex align-items-center gap-2">
             <span className={`px-2 py-1 text-xs border-round ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
               }`}>
-              {apt.status === 'CONFIRMED' ? 'Confirmé' : 'Planifié'}
+              {apt.status === 'CONFIRMED' ? t('dashboard.confirmed') : t('dashboard.scheduled')}
             </span>
             <i className="pi pi-chevron-right text-400"></i>
           </div>
@@ -231,6 +234,7 @@ const UpcomingAppointments: React.FC = () => {
 
 const UnpaidInvoices: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -254,7 +258,7 @@ const UnpaidInvoices: React.FC = () => {
   }
 
   if (invoices.length === 0) {
-    return <p className="text-500 text-center py-3">Aucune facture impayée</p>;
+    return <p className="text-500 text-center py-3">{t('dashboard.noUnpaid')}</p>;
   }
 
   return (
