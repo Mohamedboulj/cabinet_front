@@ -149,7 +149,7 @@
             "history": "History",
             "consultations": "Consultations ({{count}})",
             "appointments": "Appointments ({{count}})",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "info": {
             "contactDetails": "Contact details",
@@ -268,7 +268,7 @@
         "deleteConfirm": "Are you sure you want to delete this appointment?",
         "tabs": {
             "info": "Information",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "info": {
             "details": "Appointment details",
