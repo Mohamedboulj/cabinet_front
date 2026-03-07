@@ -227,6 +227,10 @@
             "updated": "{{count}} patient(s) updated",
             "patientCreated": "Patient <strong>{{name}}</strong> has been created.",
             "newImport": "New import"
+        },
+        "backToList": "Back to list",
+        "errors": {
+            "invalidFormat": "The file contains no data rows (only headers or empty)."
         }
     },
     "appointments": {
@@ -402,7 +406,7 @@
             "consultation": "Consultation",
             "vitalSigns": "Vital signs",
             "prescriptions": "Prescriptions",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "cards": {
             "patient": "Patient",

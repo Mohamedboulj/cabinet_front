@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/app/providers/AuthProvider';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
-import type { User } from '../../types';
-import LanguageSwitcher from '../LanguageSwitcher';
+import type { User } from '@/types';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 interface TopbarProps {
   onMenuToggle: () => void;

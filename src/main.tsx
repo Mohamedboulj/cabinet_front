@@ -1,9 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { PrimeReactProvider } from 'primereact/api'
-import App from './App'
-import { AuthProvider } from './context/AuthContext'
+import App from './app/App'
 import './i18n'
 
 // PrimeReact CSS
@@ -14,12 +11,6 @@ import 'primeflex/primeflex.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <PrimeReactProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </PrimeReactProvider>
+    <App />
   </React.StrictMode>,
 )

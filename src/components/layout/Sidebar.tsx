@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { PanelMenu } from 'primereact/panelmenu';
 import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
-import type { User } from '../../types';
+import type { User } from '@/types';
 
 interface SidebarProps {
   visible: boolean;

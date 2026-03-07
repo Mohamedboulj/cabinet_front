@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/app/providers/AuthProvider';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
@@ -10,18 +10,18 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen surface-ground">
-      <Topbar 
-        onMenuToggle={() => setSidebarVisible(!sidebarVisible)} 
+      <Topbar
+        onMenuToggle={() => setSidebarVisible(!sidebarVisible)}
         user={user}
       />
-      
-      <Sidebar 
-        visible={sidebarVisible} 
+
+      <Sidebar
+        visible={sidebarVisible}
         onHide={() => setSidebarVisible(false)}
         user={user}
       />
-      
-      <main 
+
+      <main
         className="flex-1 transition-all duration-300"
         style={{ marginTop: '4rem', paddingLeft: '1rem' }}
       >

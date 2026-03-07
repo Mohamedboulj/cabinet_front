@@ -227,6 +227,10 @@
             "updated": "{{count}} patient(s) modifié(s)",
             "patientCreated": "Le patient <strong>{{name}}</strong> est créé.",
             "newImport": "Nouvel import"
+        },
+        "backToList": "Retour à la liste",
+        "errors": {
+            "invalidFormat": "Le fichier ne contient aucune ligne de données (seulement des en-têtes ou vide)."
         }
     },
     "appointments": {
