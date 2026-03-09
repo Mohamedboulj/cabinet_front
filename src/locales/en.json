@@ -300,9 +300,9 @@
     },
     "calendar": {
         "title": "Appointment Calendar",
+        "locale": "en",
         "today": "Today",
         "newAppointment": "New appointment",
-        "holidays": "Public holidays",
         "nationalHoliday": "National holiday",
         "religiousHoliday": "Religious holiday",
         "exceptionalDay": "Exceptional day",
@@ -334,7 +334,16 @@
             "week": "Week",
             "day": "Day"
         },
-        "allDay": "All day"
+        "allDay": "All day",
+        "holidays": {
+            "title": "Public holidays",
+            "national": "National holiday",
+            "religious": "Religious holiday",
+            "exceptional": "Exceptional day"
+        },
+        "month": "Month",
+        "week": "Week",
+        "day": "Day"
     },
     "consultations": {
         "title": "Consultations",

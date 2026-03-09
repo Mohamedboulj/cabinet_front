@@ -300,9 +300,9 @@
     },
     "calendar": {
         "title": "Calendrier des Rendez-vous",
+        "locale": "fr",
         "today": "Aujourd'hui",
         "newAppointment": "Nouveau RDV",
-        "holidays": "Jours fériés",
         "nationalHoliday": "Fête nationale",
         "religiousHoliday": "Fête religieuse",
         "exceptionalDay": "Jour exceptionnel",
@@ -334,7 +334,16 @@
             "week": "Semaine",
             "day": "Jour"
         },
-        "allDay": "Toute la journée"
+        "allDay": "Toute la journée",
+        "holidays": {
+            "title": "Jours fériés",
+            "national": "Fête nationale",
+            "religious": "Fête religieuse",
+            "exceptional": "Jour exceptionnel"
+        },
+        "month": "Mois",
+        "week": "Semaine",
+        "day": "Jour"
     },
     "consultations": {
         "title": "Consultations",
