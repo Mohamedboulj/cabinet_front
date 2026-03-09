@@ -11,7 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import PatientDetail from './pages/PatientDetail';
 import PatientImport from './pages/PatientImport';
-import Appointments from './pages/Appointments';
+import { Appointments } from '@/features/appointments';
 import AppointmentDetail from './pages/AppointmentDetail';
 import Calendar from './pages/Calendar';
 import Consultations from './pages/Consultations';

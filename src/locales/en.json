@@ -149,7 +149,7 @@
             "history": "History",
             "consultations": "Consultations ({{count}})",
             "appointments": "Appointments ({{count}})",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "info": {
             "contactDetails": "Contact details",
@@ -227,6 +227,10 @@
             "updated": "{{count}} patient(s) updated",
             "patientCreated": "Patient <strong>{{name}}</strong> has been created.",
             "newImport": "New import"
+        },
+        "backToList": "Back to list",
+        "errors": {
+            "invalidFormat": "The file contains no data rows (only headers or empty)."
         }
     },
     "appointments": {
@@ -264,7 +268,7 @@
         "deleteConfirm": "Are you sure you want to delete this appointment?",
         "tabs": {
             "info": "Information",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "info": {
             "details": "Appointment details",
@@ -296,9 +300,9 @@
     },
     "calendar": {
         "title": "Appointment Calendar",
+        "locale": "en",
         "today": "Today",
         "newAppointment": "New appointment",
-        "holidays": "Public holidays",
         "nationalHoliday": "National holiday",
         "religiousHoliday": "Religious holiday",
         "exceptionalDay": "Exceptional day",
@@ -330,7 +334,16 @@
             "week": "Week",
             "day": "Day"
         },
-        "allDay": "All day"
+        "allDay": "All day",
+        "holidays": {
+            "title": "Public holidays",
+            "national": "National holiday",
+            "religious": "Religious holiday",
+            "exceptional": "Exceptional day"
+        },
+        "month": "Month",
+        "week": "Week",
+        "day": "Day"
     },
     "consultations": {
         "title": "Consultations",
@@ -402,7 +415,7 @@
             "consultation": "Consultation",
             "vitalSigns": "Vital signs",
             "prescriptions": "Prescriptions",
-            "activityHistory": "Activity history"
+            "activityHistory": "Activity logs"
         },
         "cards": {
             "patient": "Patient",

@@ -1,14 +1,4 @@
-/**
- * Extracts a user-friendly error message from an Axios error response.
- *
- * Checks multiple common response formats from the backend:
- *   { "error": "..." }
- *   { "message": "..." }
- *   { "detail": "..." }
- *   { "errors": { "field": "..." } }  (validation)
- *   { "violations": [{ "message": "..." }] }  (Symfony validator)
- */
-import i18n from '../i18n';
+import i18n from '@/i18n';
 
 export function getApiErrorMessage(error: any, fallback: string = i18n.t('common.genericError')): string {
     const data = error?.response?.data;
@@ -45,4 +35,3 @@ export function getApiErrorMessage(error: any, fallback: string = i18n.t('common
 
     return fallback;
 }
-
