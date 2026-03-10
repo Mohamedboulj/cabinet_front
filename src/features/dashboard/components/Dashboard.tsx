@@ -23,8 +23,12 @@ const Dashboard: React.FC = () => {
     try {
       const data = await dashboardService.getStats();
       setStats(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading stats:', error);
+      if (error.response?.status === 401) {
+        console.error('401 on:', error.config?.url, error.response?.data);
+        // rest of logic
+      }
     } finally {
       setLoading(false);
     }
