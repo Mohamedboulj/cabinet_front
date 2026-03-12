@@ -140,6 +140,22 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
         ),
       },
       {
+        label: t('sidebar.medicalDocs'),
+        icon: 'pi pi-file',
+        template: (item: any, options: any) => (
+          <NavLink
+            to="/medical-docs"
+            className={({ isActive }) =>
+              `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
+            }
+            onClick={onHide}
+          >
+            <span className={options.iconClassName}></span>
+            <span className={options.labelClassName}>{item.label}</span>
+          </NavLink>
+        ),
+      },
+      {
         label: t('sidebar.invoices'),
         icon: 'pi pi-money-bill',
         template: (item: any, options: any) => (

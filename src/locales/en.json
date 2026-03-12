@@ -47,6 +47,7 @@
         "calendar": "Calendar",
         "consultations": "Consultations",
         "prescriptions": "Prescriptions",
+        "medicalDocs": "Medical Documents",
         "invoices": "Invoices",
         "users": "Users",
         "settings": "Settings"

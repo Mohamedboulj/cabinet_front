@@ -18,6 +18,7 @@ const ConsultationDetail = lazy(() => import('@/features/consultations/component
 const Invoices = lazy(() => import('@/features/invoices/components/Invoices'));
 const InvoiceDetail = lazy(() => import('@/features/invoices/components/InvoiceDetail'));
 const Prescriptions = lazy(() => import('@/features/prescriptions'));
+const MedicalDocs = lazy(() => import('@/features/medicalDocEditor'));
 const Users = lazy(() => import('@/features/users'));
 const Settings = lazy(() => import('@/features/settings'));
 const NotFound = lazy(() => import('@/app/NotFound'));
@@ -73,6 +74,7 @@ export function Router() {
                     <Route path="invoices" element={<Invoices />} />
                     <Route path="invoices/:id" element={<InvoiceDetail />} />
                     <Route path="prescriptions" element={<Prescriptions />} />
+                    <Route path="medical-docs" element={<MedicalDocs />} />
                     <Route path="users" element={
                         <ProtectedRoute requiredRole="ROLE_ADMIN">
                             <Users />

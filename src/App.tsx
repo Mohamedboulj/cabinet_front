@@ -1,27 +1,27 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '@/app/providers/AuthProvider';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout';
 
-// Pages
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Patients from './pages/Patients';
-import PatientDetail from './pages/PatientDetail';
-import PatientImport from './pages/PatientImport';
+import Login from '@/features/auth/components/Login';
+import Dashboard from '@/features/dashboard/components/Dashboard';
+import Patients from '@/features/patients/components/Patients';
+import PatientDetail from '@/features/patients/components/PatientDetail';
+import PatientImport from '@/features/patients/components/PatientImport';
 import { Appointments } from '@/features/appointments';
-import AppointmentDetail from './pages/AppointmentDetail';
-import Calendar from './pages/Calendar';
-import Consultations from './pages/Consultations';
-import ConsultationDetail from './pages/ConsultationDetail';
-import Invoices from './pages/Invoices';
-import InvoiceDetail from './pages/InvoiceDetail';
-import Prescriptions from './pages/Prescriptions';
-import Users from './pages/Users';
-import Settings from './pages/Settings';
-import NotFound from './pages/NotFound';
+import AppointmentDetail from '@/features/appointments/components/AppointmentDetail';
+import Calendar from '@/features/appointments/components/Calendar';
+import Consultations from '@/features/consultations/components/Consultations';
+import ConsultationDetail from '@/features/consultations/components/ConsultationDetail';
+import Invoices from '@/features/invoices/components/Invoices';
+import InvoiceDetail from '@/features/invoices/components/InvoiceDetail';
+import Prescriptions from '@/features/prescriptions/components/Prescriptions';
+import { MedicalDocEditor } from '@/features/medicalDocEditor';
+import Users from '@/features/users/components/Users';
+import Settings from '@/features/settings/components/Settings';
+import NotFound from '@/app/NotFound';
 
 // Protected Route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({
@@ -85,6 +85,7 @@ function App() {
         <Route path="invoices" element={<Invoices />} />
         <Route path="invoices/:id" element={<InvoiceDetail />} />
         <Route path="prescriptions" element={<Prescriptions />} />
+        <Route path="medical-docs" element={<MedicalDocEditor />} />
         <Route path="users" element={
           <ProtectedRoute requiredRole="ROLE_ADMIN">
             <Users />
