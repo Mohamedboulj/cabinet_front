@@ -132,7 +132,6 @@ const Consultations: React.FC = () => {
           detail: t('consultations.updated'),
         });
       } else {
-        console.log(formData)
         await consultationService.createConsultation(formData);
         toast.current?.show({
           severity: 'success',

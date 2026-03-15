@@ -4,7 +4,9 @@ import {
   type BorderConfig, type EditTarget, type LayoutTab,
   type Logo, type LogoPositionId, type Margins,
   type Orientation, type PageSize, type PanelId, type TemplateKey,
+  getPopulatedTemplate,
 } from "../utils/medicalDocEditor.utils";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const DEFAULT_BORDER: BorderConfig = {
   enabled: true, pattern: "solid", color: "#3DBFB8i",
@@ -12,6 +14,8 @@ const DEFAULT_BORDER: BorderConfig = {
 };
 
 export function useMedicalDocEditor() {
+  const { user } = useAuth();
+
   // ── Content ───────────────────────────────────────────────────────────────
   const [activeTemplate, setActiveTemplate] = useState<TemplateKey>("repos");
   const [headerHtml, setHeaderHtml] = useState(TEMPLATES.repos.header);
@@ -48,13 +52,26 @@ export function useMedicalDocEditor() {
   const footerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Seed contentEditable refs on mount
+  // Seed contentEditable refs on mount and immediately populate with active user data if available
   useEffect(() => {
-    if (headerRef.current) headerRef.current.innerHTML = headerHtml;
-    if (bodyRef.current) bodyRef.current.innerHTML = bodyHtml;
-    if (footerRef.current) footerRef.current.innerHTML = footerHtml;
+    const t = TEMPLATES[activeTemplate];
+    const initialHeader = getPopulatedTemplate(t.header, user || undefined);
+    const initialBody = getPopulatedTemplate(t.body, user || undefined);
+    const initialFooter = getPopulatedTemplate(t.footer, user || undefined);
+
+    setHeaderHtml(initialHeader);
+    setBodyHtml(initialBody);
+    setFooterHtml(initialFooter);
+
+    if (headerRef.current) headerRef.current.innerHTML = initialHeader;
+    if (bodyRef.current) bodyRef.current.innerHTML = initialBody;
+    if (footerRef.current) footerRef.current.innerHTML = initialFooter;
+    
+    // We only want this to run once on mount, regardless of activeTemplate changes
+    // User object is included in dependencies to ensure it populates correctly if user loads slightly after mount, 
+    // but the template populating logic inside applyTemplate handles changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   // ── Derived values ────────────────────────────────────────────────────────
   const { pw, ph } = getPageDimensions(pageSize, orientation);
@@ -82,13 +99,18 @@ export function useMedicalDocEditor() {
   const applyTemplate = useCallback((key: TemplateKey) => {
     const t = TEMPLATES[key];
     setActiveTemplate(key);
-    setHeaderHtml(t.header); setBodyHtml(t.body); setFooterHtml(t.footer);
+    
+    const newHeader = getPopulatedTemplate(t.header, user || undefined);
+    const newBody = getPopulatedTemplate(t.body, user || undefined);
+    const newFooter = getPopulatedTemplate(t.footer, user || undefined);
+    
+    setHeaderHtml(newHeader); setBodyHtml(newBody); setFooterHtml(newFooter);
     setTimeout(() => {
-      if (headerRef.current) headerRef.current.innerHTML = t.header;
-      if (bodyRef.current) bodyRef.current.innerHTML = t.body;
-      if (footerRef.current) footerRef.current.innerHTML = t.footer;
+      if (headerRef.current) headerRef.current.innerHTML = newHeader;
+      if (bodyRef.current) bodyRef.current.innerHTML = newBody;
+      if (footerRef.current) footerRef.current.innerHTML = newFooter;
     }, 0);
-  }, []);
+  }, [user]);
 
   const handleLogoUpload = useCallback((files: FileList | null) => {
     if (!files) return;

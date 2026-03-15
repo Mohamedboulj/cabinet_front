@@ -31,7 +31,6 @@ export const consultationService = {
 
     async createConsultation(consultation: Partial<Consultation>): Promise<ApiResponse<Consultation>> {
         const response = await api.post('/consultations', consultation);
-        console.log(response);
         return response.data;
     },
 

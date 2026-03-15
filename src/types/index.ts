@@ -4,8 +4,16 @@ export interface User {
   firstName: string;
   lastName: string;
   fullName?: string;
+  nameAr?: string;
+  address?: string;
+  addressAr?: string;
+  city?: string;
+  cityAr?: string;
   phone?: string | null;
   specialty?: string | null;
+  title?: string | null;
+  titleAr?: string | null;
+  logo?: string;
   licenseNumber?: string | null;
   roles: string[];
   isActive: boolean | null;

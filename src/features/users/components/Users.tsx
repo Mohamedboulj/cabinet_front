@@ -11,6 +11,9 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { FileUpload, type ItemTemplateOptions, type FileUploadHeaderTemplateOptions, type FileUploadSelectEvent as PrimeFileUploadSelectEvent } from 'primereact/fileupload';
+import { ProgressBar } from 'primereact/progressbar';
+import { Tooltip } from 'primereact/tooltip';
 import { userService } from '@/features/users/api/users.api';
 import DataTableSkeleton from '@/components/skeletons/DataTableSkeleton';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +27,9 @@ const Users: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [totalSize, setTotalSize] = useState(0);
+  const fileUploadRef = useRef<FileUpload>(null);
 
   useEffect(() => {
     loadUsers();
@@ -71,12 +77,16 @@ const Users: React.FC = () => {
   const openNewDialog = () => {
     setEditingUser(null);
     setFormData({ isActive: true, roles: ['ROLE_SECRETAIRE'] });
+    setSelectedLogoFile(null);
+    setTotalSize(0);
     setDialogVisible(true);
   };
 
   const openEditDialog = (user: User) => {
     setEditingUser(user);
     setFormData({ ...user });
+    setSelectedLogoFile(null);
+    setTotalSize(0);
     setDialogVisible(true);
   };
 
@@ -172,6 +182,83 @@ const Users: React.FC = () => {
       />
     </div>
   );
+
+  const onTemplateSelect = (e: PrimeFileUploadSelectEvent) => {
+    let _totalSize = totalSize;
+    let files = e.files;
+    
+    // We only take the first file for the logo
+    const file = files[0];
+    if (file) {
+      setSelectedLogoFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, logo: objectUrl });
+      _totalSize += file.size || 0;
+    }
+    setTotalSize(_totalSize);
+  };
+
+  const onTemplateClear = () => {
+    setTotalSize(0);
+    setSelectedLogoFile(null);
+    setFormData({ ...formData, logo: editingUser ? editingUser.logo : undefined });
+  };
+
+  const headerTemplate = (options: FileUploadHeaderTemplateOptions) => {
+    const { className, chooseButton, cancelButton } = options;
+    const value = totalSize / 10000;
+    const formattedValue = fileUploadRef.current ? fileUploadRef.current.formatSize(totalSize) : '0 B';
+
+    return (
+      <div className={className} style={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center' }}>
+        {chooseButton}
+        {cancelButton}
+        <div className="flex align-items-center gap-3 ml-auto">
+          <span>{formattedValue} / 1 MB</span>
+          <ProgressBar value={value} showValue={false} style={{ width: '10rem', height: '12px' }}></ProgressBar>
+        </div>
+      </div>
+    );
+  };
+
+  const itemTemplate = (file: object, props: ItemTemplateOptions) => {
+    const f = file as File & { objectURL: string };
+    return (
+      <div className="flex align-items-center flex-wrap">
+        <div className="flex align-items-center" style={{ width: '40%' }}>
+          <img alt={f.name} role="presentation" src={f.objectURL} width={50} />
+          <span className="flex flex-column text-left ml-3">
+            {f.name}
+            <small>{new Date().toLocaleDateString()}</small>
+          </span>
+        </div>
+        <Tag value={props.formatSize} severity="warning" className="px-3 py-2" />
+        <Button 
+          type="button" 
+          icon="pi pi-times" 
+          className="p-button-outlined p-button-rounded p-button-danger ml-auto" 
+          onClick={(e) => {
+             props.onRemove(e);
+             onTemplateClear();
+          }} 
+        />
+      </div>
+    );
+  };
+
+  const emptyTemplate = () => {
+    return (
+      <div className="flex align-items-center flex-column">
+        <i className="pi pi-image mt-3 p-5" style={{ fontSize: '5em', borderRadius: '50%', backgroundColor: 'var(--surface-b)', color: 'var(--surface-d)' }}></i>
+        <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
+          Drag and Drop Image Here
+        </span>
+      </div>
+    );
+  };
+
+  const chooseOptions = { icon: 'pi pi-fw pi-images', iconOnly: true, className: 'custom-choose-btn p-button-rounded p-button-outlined' };
+  const cancelOptions = { icon: 'pi pi-fw pi-times', iconOnly: true, className: 'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined' };
 
   return (
     <div>
@@ -301,6 +388,100 @@ const Users: React.FC = () => {
               placeholder={t('users.form.licenseNumberPlaceholder')}
             />
           </div>
+
+          <div className="grid">
+            <div className="col-6 field">
+              <label className="block font-medium mb-2">Diplomé(e)</label>
+              <InputText
+                value={formData.title || ''}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div className="col-6 field" style={{ direction: 'rtl' }}>
+              <label className="block font-medium mb-2">شهادة</label>
+              <InputText
+                value={formData.titleAr || ''}
+                onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
+                className="w-full"
+              />
+            </div>
+          </div>
+          <div className="grid">
+            <div className="col-6 field">
+              <label className="block font-medium mb-2">Ville</label>
+              <InputText
+                value={formData.city || ''}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div className="col-6 field" style={{ direction: 'rtl' }}>
+              <label className="block font-medium mb-2">المدينة</label>
+              <InputText
+                value={formData.cityAr || ''}
+                onChange={(e) => setFormData({ ...formData, cityAr: e.target.value })}
+                className="w-full"
+              />
+            </div>
+          </div>
+          <div className="grid">
+            <div className="col-6 field">
+              <label className="block font-medium mb-2">Address</label>
+              <InputText
+                value={formData.address || ''}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div className="col-6 field" style={{ direction: 'rtl' }}>
+              <label className="block font-medium mb-2">العنوان</label>
+              <InputText
+                value={formData.addressAr || ''}
+                onChange={(e) => setFormData({ ...formData, addressAr: e.target.value })}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="block font-medium mb-2">Logo</label>
+            
+            {editingUser?.logo && !selectedLogoFile && (
+              <div className="mb-3 flex align-items-center p-3 border-1 surface-border border-round">
+                <img 
+                  src={editingUser.logo} 
+                  alt="Current Logo" 
+                  style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} 
+                  className="mr-3"
+                />
+                <div className="flex flex-column">
+                  <span className="font-bold">Current Logo</span>
+                  <span className="text-sm text-color-secondary">Upload a new image below to replace it.</span>
+                </div>
+              </div>
+            )}
+            
+            <Tooltip target=".custom-choose-btn" content="Choose" position="bottom" />
+            <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
+            <FileUpload
+              ref={fileUploadRef}
+              name="logo"
+              customUpload
+              uploadHandler={() => {}}
+              accept="image/*"
+              maxFileSize={1000000}
+              onSelect={onTemplateSelect}
+              onError={onTemplateClear}
+              onClear={onTemplateClear}
+              headerTemplate={headerTemplate}
+              itemTemplate={itemTemplate}
+              emptyTemplate={emptyTemplate}
+              chooseOptions={chooseOptions}
+              cancelOptions={cancelOptions}
+            />
+          </div>
+          
           <div className="field">
             <label className="block font-medium mb-2">{t('users.form.roles')}</label>
             <MultiSelect

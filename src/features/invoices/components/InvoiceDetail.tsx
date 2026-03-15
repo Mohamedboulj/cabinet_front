@@ -41,7 +41,6 @@ const InvoiceDetail: React.FC = () => {
     try {
       const response = await invoiceService.getInvoice(invoiceId);
       setInvoice(response.data);
-      console.log(response)
     } catch (error) {
       toast.current?.show({
         severity: 'error',

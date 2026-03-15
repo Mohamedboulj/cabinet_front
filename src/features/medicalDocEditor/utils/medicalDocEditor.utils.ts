@@ -80,23 +80,23 @@ export const SIDEBAR_TABS: { id: PanelId; icon: string; label: string }[] = [
 const SHARED_HEADER = `<table width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;line-height:1.6;">
   <tr>
     <td style="width:50%;vertical-align:top;">
-      <strong style="font-size:13px;">Dr. [Prénom Nom]</strong><br/>
-      Diplômé(e) de la faculté de médecine et de pharmacie de [Ville]
+      <strong style="font-size:13px;">Dr. {{fullName}}</strong><br/>
+      {{title}}
     </td>
     <td style="width:50%;vertical-align:top;text-align:right;direction:rtl;">
-      <strong style="font-size:13px;">د. [الاسم الكامل]</strong><br/>
-      خريجة كلية الطب و الصيدلة بالرباط
+      <strong style="font-size:13px;">د. {{nameAr}}</strong><br/>
+     {{titleAr}}
     </td>
   </tr>
 </table>
 <p style="text-align:center;margin-top:14px;color:#555;font-size:12px;">
-  <span style="direction:rtl;display:inline;">Rabat, le .....................................الرباط، في </span>
+  <span style="direction:rtl;display:inline;">{{city}}, le .....................................{{cityAr}}، في </span>
 </p>`;
 
 const SHARED_FOOTER = `<div style="text-align:center;font-size:10.5px;color:#555;line-height:1.8;">
-  Imm.13 – 1<sup>er</sup> étage -T7 - Av. Assalam ( terminus tramway L2) – CYM –Rabat.<br/>
-  <span style="direction:rtl;display:block;">عمارة 13 – الطابق الأول – 7ت – شارع السلام ( محطة نهاية الطراموا الخط 2 ) – حي يعقوب المنصور – الرباط</span>
-  Tél / WhatsApp : +212 6 07 35 96 05 &nbsp;|&nbsp; boudkourjouba@gmail.com
+  {{address}}<br/>
+  <span style="direction:rtl;display:block;">{{addressAr}}</span>
+  Tél / WhatsApp : {{phone}} &nbsp;|&nbsp; {{email}}
 </div>`;
 
 export const TEMPLATES: Record<TemplateKey, TemplateDefinition> = {
@@ -115,7 +115,7 @@ export const TEMPLATES: Record<TemplateKey, TemplateDefinition> = {
     label: "Certificat de Mariage", icon: "💍",
     header: SHARED_HEADER, footer: SHARED_FOOTER,
     body: `<div style="text-align:center;margin:28px 0 32px;"><div style="display:inline-block;background:#e8f7f7;border:2px solid #3DBFB8;padding:14px 44px;border-radius:4px;"><strong style="font-size:19px;color:#3DBFB8;display:block;direction:rtl;">شهادة طبية<br/>قصد الزواج</strong></div></div>
-<p style="margin-bottom:18px;direction:rtl;text-align:right;font-size:15px;">أنا الموقعة اسفله، الدكتورة محجوبة بودكور، أشهد أنني بتاريخ يومه بطلب منه/منها</p>
+<p style="margin-bottom:18px;direction:rtl;text-align:right;font-size:15px;">أنا الموقعة اسفله، د. {{nameAr}}، أشهد أنني بتاريخ يومه بطلب منه/منها</p>
 <p style="margin-bottom:18px;direction:rtl;text-align:right;font-size:15px;">المسمى/ المسماة <span style="border-bottom:1px dotted #999;display:inline-block;min-width:240px;">&nbsp;</span></p>
 <p style="margin-bottom:18px;direction:rtl;text-align:right;font-size:15px;">الحامل(ة) للبطاقة الوطنية/جواز السفر رقم <span style="border-bottom:1px dotted #999;display:inline-block;min-width:180px;">&nbsp;</span></p>
 <p style="margin-bottom:28px;direction:rtl;text-align:right;font-size:15px;">و تبين بعد الفحص السريري أن المعني(ة) بالأمر لا تظهر عليه (ها) علامة لمرض معد.</p>
@@ -139,6 +139,21 @@ export const TEMPLATES: Record<TemplateKey, TemplateDefinition> = {
 };
 
 // ─── PURE FUNCTIONS ──────────────────────────────────────────────────────────
+
+export function getPopulatedTemplate(html: string, data?: Record<string, any>): string {
+  if (!data) return html;
+  return html
+    .replace(/{{fullName}}/g, data.fullName || '')
+    .replace(/{{title}}/g, data.title || '')
+    .replace(/{{titleAr}}/g, data.titleAr || '')
+    .replace(/{{nameAr}}/g, data.nameAr || '')
+    .replace(/{{city}}/g, data.city || '')
+    .replace(/{{cityAr}}/g, data.cityAr || '')
+    .replace(/{{address}}/g, data.address || '')
+    .replace(/{{addressAr}}/g, data.addressAr || '')
+    .replace(/{{phone}}/g, data.phone || '')
+    .replace(/{{email}}/g, data.email || '');
+}
 
 /** Returns CSS for the absolutely-positioned border frame inside the page. */
 export function buildBorderFrameStyle(b: BorderConfig): CSSProperties {
