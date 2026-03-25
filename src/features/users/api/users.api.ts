@@ -7,8 +7,9 @@ export const userService = {
         return response.data;
     },
 
-    async createUser(user: Partial<User>): Promise<ApiResponse<User>> {
-        const response = await api.post('/users', user);
+    async createUser(user: Partial<User> | FormData): Promise<ApiResponse<User>> {
+        const config = user instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+        const response = await api.post('/users', user, config);
         return response.data;
     },
 
@@ -24,8 +25,9 @@ export const userService = {
         await api.post(`/users/${id}/activate`);
     },
 
-    async updateUser(id: number, newUser: Partial<User>): Promise<void> {
-        await api.put(`/users/${id}`, { newUser });
+    async updateUser(id: number, data: Partial<User> | FormData): Promise<void> {
+        const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+        await api.put(`/users/${id}`, data, config);
     },
 
     async getDoctors(): Promise<ApiResponse<User[]>> {

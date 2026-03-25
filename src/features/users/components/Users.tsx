@@ -138,15 +138,34 @@ const Users: React.FC = () => {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      const submitData = new FormData();
+
+      // Append all fields except logo (handled separately as a File)
+      Object.keys(formData).forEach(key => {
+        if (key === 'logo') return; // skip, we append the File below
+        const val = formData[key as keyof User];
+        if (val === undefined || val === null) return;
+        if (Array.isArray(val)) {
+          val.forEach(item => submitData.append(`${key}[]`, String(item)));
+        } else {
+          submitData.append(key, String(val));
+        }
+      });
+
+      // Append the actual File binary if the user selected a new logo
+      if (selectedLogoFile) {
+        submitData.append('logo', selectedLogoFile);
+      }
+
       if (editingUser) {
-        await userService.updateUser(editingUser.id, formData);
+        await userService.updateUser(editingUser.id, submitData);
         toast.current?.show({
           severity: 'success',
           summary: t('common.success'),
           detail: t('users.updated'),
         });
       } else {
-        await userService.createUser(formData);
+        await userService.createUser(submitData);
         toast.current?.show({
           severity: 'success',
           summary: t('common.success'),
@@ -186,7 +205,7 @@ const Users: React.FC = () => {
   const onTemplateSelect = (e: PrimeFileUploadSelectEvent) => {
     let _totalSize = totalSize;
     let files = e.files;
-    
+
     // We only take the first file for the logo
     const file = files[0];
     if (file) {
@@ -233,14 +252,14 @@ const Users: React.FC = () => {
           </span>
         </div>
         <Tag value={props.formatSize} severity="warning" className="px-3 py-2" />
-        <Button 
-          type="button" 
-          icon="pi pi-times" 
-          className="p-button-outlined p-button-rounded p-button-danger ml-auto" 
+        <Button
+          type="button"
+          icon="pi pi-times"
+          className="p-button-outlined p-button-rounded p-button-danger ml-auto"
           onClick={(e) => {
-             props.onRemove(e);
-             onTemplateClear();
-          }} 
+            props.onRemove(e);
+            onTemplateClear();
+          }}
         />
       </div>
     );
@@ -446,13 +465,13 @@ const Users: React.FC = () => {
 
           <div className="field">
             <label className="block font-medium mb-2">Logo</label>
-            
+
             {editingUser?.logo && !selectedLogoFile && (
               <div className="mb-3 flex align-items-center p-3 border-1 surface-border border-round">
-                <img 
-                  src={editingUser.logo} 
-                  alt="Current Logo" 
-                  style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} 
+                <img
+                  src={editingUser.logo}
+                  alt="Current Logo"
+                  style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }}
                   className="mr-3"
                 />
                 <div className="flex flex-column">
@@ -461,14 +480,14 @@ const Users: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <Tooltip target=".custom-choose-btn" content="Choose" position="bottom" />
             <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
             <FileUpload
               ref={fileUploadRef}
               name="logo"
               customUpload
-              uploadHandler={() => {}}
+              uploadHandler={() => { }}
               accept="image/*"
               maxFileSize={1000000}
               onSelect={onTemplateSelect}
@@ -481,7 +500,7 @@ const Users: React.FC = () => {
               cancelOptions={cancelOptions}
             />
           </div>
-          
+
           <div className="field">
             <label className="block font-medium mb-2">{t('users.form.roles')}</label>
             <MultiSelect

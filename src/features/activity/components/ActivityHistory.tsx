@@ -1,4 +1,3 @@
-import React from 'react';
 import type { AuditLog } from '@/types';
 import { Card } from 'primereact/card';
 import ActivityHistorySkeleton from '@/features/activity/components/skeletons/ActivityHistorySkeleton';
