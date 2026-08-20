@@ -84,9 +84,8 @@ export interface Consultation {
   invoice?: Invoice;
 }
 
-export interface Prescription {
-  id: number;
-  consultation: Consultation;
+export interface PrescriptionMedication {
+  id?: number;
   medicationName: string;
   dosage?: string;
   frequency: string;
@@ -94,6 +93,12 @@ export interface Prescription {
   instructions?: string;
   quantity?: number;
   pharmaceuticalForm?: string;
+}
+
+export interface Prescription {
+  id: number;
+  consultation: Consultation;
+  medications: PrescriptionMedication[];
   isRenewable: boolean;
   renewalsCount: number;
   notes?: string;

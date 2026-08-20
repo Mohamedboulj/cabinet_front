@@ -313,7 +313,7 @@ const ConsultationDetail: React.FC = () => {
 
         <TabPanel header={t('consultationDetail.tabs.prescriptions')} leftIcon="pi pi-file mr-2">
           <Card className="shadow-2">
-            <DataTable value={consultation.prescriptions || []} emptyMessage={t('consultationDetail.prescriptionTable.noPrescriptions')}>
+            <DataTable value={(consultation.prescriptions || []).flatMap((p) => p.medications || [])} emptyMessage={t('consultationDetail.prescriptionTable.noPrescriptions')}>
               <Column field="medicationName" header={t('consultationDetail.prescriptionTable.medication')} />
               <Column field="dosage" header={t('consultationDetail.prescriptionTable.dosage')} />
               <Column field="frequency" header={t('consultationDetail.prescriptionTable.frequency')} />
