@@ -3,7 +3,7 @@ import { prescriptionService } from '@/features/prescriptions/api/prescriptions.
 import { consultationService } from '@/features/consultations/api/consultations.api';
 import { medicamentService, type Medicament } from '@/features/prescriptions/api/medicaments.api';
 import { getApiErrorMessage } from '@/utils/errorUtils';
-import type { Prescription, Consultation } from '@/types';
+import type { Prescription, PrescriptionMedication, Consultation } from '@/types';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -20,6 +20,16 @@ import { AutoComplete } from 'primereact/autocomplete';
 import { Checkbox } from 'primereact/checkbox';
 import { useTranslation } from 'react-i18next';
 
+const emptyMedication: PrescriptionMedication = {
+  medicationName: '',
+  dosage: '',
+  frequency: '',
+  duration: '',
+  instructions: '',
+  quantity: 1,
+  pharmaceuticalForm: '',
+};
+
 const Prescriptions: React.FC = () => {
   const { t } = useTranslation();
   const toast = useRef<Toast>(null);
@@ -29,12 +39,14 @@ const Prescriptions: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogVisible, setDialogVisible] = useState(false);
   const [editingPrescription, setEditingPrescription] = useState<Prescription | null>(null);
+  const [viewDialogVisible, setViewDialogVisible] = useState(false);
+  const [viewingPrescription, setViewingPrescription] = useState<Prescription | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [medications, setMedications] = useState<PrescriptionMedication[]>([{ ...emptyMedication }]);
   const [submitting, setSubmitting] = useState(false);
 
-  // Medication autocomplete
+  // Medication autocomplete (shared — only one row's autocomplete is open at a time)
   const [medicamentSuggestions, setMedicamentSuggestions] = useState<Medicament[]>([]);
-  const [selectedMedicament, setSelectedMedicament] = useState<any>(null);
 
   useEffect(() => {
     loadPrescriptions();
@@ -95,47 +107,65 @@ const Prescriptions: React.FC = () => {
     }
   };
 
-  const onMedicamentSelect = (e: any) => {
-    const med: Medicament = e.value;
-    setSelectedMedicament(med);
-    setFormData({
-      ...formData,
+  // Medication rows helpers
+  const addMedication = () => setMedications([...medications, { ...emptyMedication }]);
+
+  const removeMedication = (index: number) => {
+    if (medications.length > 1) setMedications(medications.filter((_, i) => i !== index));
+  };
+
+  const updateMedication = (index: number, field: keyof PrescriptionMedication, value: any) => {
+    const next = [...medications];
+    next[index] = { ...next[index], [field]: value };
+    setMedications(next);
+  };
+
+  const onMedicamentSelect = (index: number, med: Medicament) => {
+    const next = [...medications];
+    next[index] = {
+      ...next[index],
       medicationName: med.nom,
-      dosage: med.dosage1 ? `${med.dosage1} ${med.uniteDosage1 || ''}`.trim() : formData.dosage,
-      pharmaceuticalForm: med.forme || formData.pharmaceuticalForm,
-    });
+      dosage: med.dosage1 ? `${med.dosage1} ${med.uniteDosage1 || ''}`.trim() : next[index].dosage,
+      pharmaceuticalForm: med.forme || next[index].pharmaceuticalForm,
+    };
+    setMedications(next);
   };
 
   const openNewDialog = () => {
     setEditingPrescription(null);
-    setSelectedMedicament(null);
+    setMedications([{ ...emptyMedication }]);
     setFormData({
       isRenewable: false,
-      quantity: 1,
     });
     setDialogVisible(true);
   };
 
   const openEditDialog = (prescription: Prescription) => {
     setEditingPrescription(prescription);
-    setSelectedMedicament(prescription.medicationName);
+    setMedications(
+      prescription.medications && prescription.medications.length > 0
+        ? prescription.medications.map((m) => ({ ...m }))
+        : [{ ...emptyMedication }]
+    );
     setFormData({
       consultationId: prescription.consultation?.id,
-      medicationName: prescription.medicationName,
-      dosage: prescription.dosage,
-      frequency: prescription.frequency,
-      duration: prescription.duration,
-      instructions: prescription.instructions,
-      quantity: prescription.quantity,
-      pharmaceuticalForm: prescription.pharmaceuticalForm,
       isRenewable: prescription.isRenewable,
+      renewalsCount: prescription.renewalsCount,
       notes: prescription.notes,
     });
     setDialogVisible(true);
   };
 
+  const openViewDialog = (prescription: Prescription) => {
+    setViewingPrescription(prescription);
+    setViewDialogVisible(true);
+  };
+
   const handleSubmit = async () => {
-    if (!formData.medicationName || !formData.consultationId) {
+    // Keep only rows the user actually filled in (a medication name is the minimum)
+    const filledMedications = medications.filter((m) => m.medicationName.trim() !== '');
+
+    if (!formData.consultationId || filledMedications.length === 0) {
       toast.current?.show({
         severity: 'warn',
         summary: t('common.warning'),
@@ -144,17 +174,35 @@ const Prescriptions: React.FC = () => {
       return;
     }
 
+    // Each medication needs a frequency (backend requires it)
+    if (filledMedications.some((m) => !m.frequency || m.frequency.trim() === '')) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: t('common.warning'),
+        detail: t('prescriptions.medicationFrequencyRequired'),
+      });
+      return;
+    }
+
+    const payload: any = {
+      consultationId: formData.consultationId,
+      isRenewable: formData.isRenewable || false,
+      renewalsCount: formData.renewalsCount,
+      notes: formData.notes,
+      medications: filledMedications,
+    };
+
     setSubmitting(true);
     try {
       if (editingPrescription) {
-        await prescriptionService.updatePrescription(editingPrescription.id, formData);
+        await prescriptionService.updatePrescription(editingPrescription.id, payload);
         toast.current?.show({
           severity: 'success',
           summary: t('common.success'),
           detail: t('prescriptions.updated'),
         });
       } else {
-        await prescriptionService.createPrescription(formData);
+        await prescriptionService.createPrescription(payload);
         toast.current?.show({
           severity: 'success',
           summary: t('common.success'),
@@ -174,9 +222,16 @@ const Prescriptions: React.FC = () => {
     }
   };
 
+  const medicationsSummary = (prescription: Prescription): string => {
+    const meds = prescription.medications || [];
+    if (meds.length === 0) return '—';
+    const first = meds[0].medicationName;
+    return meds.length > 1 ? `${first} (+${meds.length - 1})` : first;
+  };
+
   const confirmDelete = (prescription: Prescription) => {
     confirmDialog({
-      message: t('prescriptions.confirmDeleteMessage', { name: prescription.medicationName }),
+      message: t('prescriptions.confirmDeleteMessage', { name: medicationsSummary(prescription) }),
       header: t('common.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDelete(prescription),
@@ -211,6 +266,19 @@ const Prescriptions: React.FC = () => {
     return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
   };
 
+  const medicationsBodyTemplate = (rowData: Prescription) => {
+    const meds = rowData.medications || [];
+    if (meds.length === 0) return <span>—</span>;
+    return (
+      <div className="flex align-items-center gap-2">
+        <span>{meds[0].medicationName}</span>
+        {meds.length > 1 && (
+          <Tag value={`+${meds.length - 1}`} severity="info" rounded />
+        )}
+      </div>
+    );
+  };
+
   const renewableBodyTemplate = (rowData: Prescription) => {
     return rowData.isRenewable ? (
       <Tag value={t('prescriptions.renewable')} severity="success" />
@@ -221,6 +289,12 @@ const Prescriptions: React.FC = () => {
 
   const actionBodyTemplate = (rowData: Prescription) => (
     <div className="flex gap-1">
+      <Button
+        icon="pi pi-eye"
+        className="p-button-rounded p-button-info p-button-sm"
+        onClick={() => openViewDialog(rowData)}
+        tooltip={t('common.view')}
+      />
       <Button
         icon="pi pi-pencil"
         className="p-button-rounded p-button-warning p-button-sm"
@@ -313,7 +387,7 @@ const Prescriptions: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <DataTableSkeleton headers={[t('prescriptions.headers.id'), t('prescriptions.headers.patient'), t('prescriptions.headers.medication'), t('prescriptions.headers.dosage'), t('prescriptions.headers.frequency'), t('prescriptions.headers.duration'), t('prescriptions.headers.renewable'), t('prescriptions.headers.date'), t('prescriptions.headers.actions')]} />
+        <DataTableSkeleton headers={[t('prescriptions.headers.id'), t('prescriptions.headers.patient'), t('prescriptions.headers.medications'), t('prescriptions.headers.renewable'), t('prescriptions.headers.date'), t('prescriptions.headers.actions')]} />
       ) : (
         <DataTable
           value={prescriptions}
@@ -325,13 +399,10 @@ const Prescriptions: React.FC = () => {
         >
           <Column field="id" header={t('prescriptions.headers.id')} sortable style={{ width: '5rem' }} />
           <Column header={t('prescriptions.headers.patient')} body={patientBodyTemplate} sortable />
-          <Column field="medicationName" header={t('prescriptions.headers.medication')} sortable />
-          <Column field="dosage" header={t('prescriptions.headers.dosage')} />
-          <Column field="frequency" header={t('prescriptions.headers.frequency')} />
-          <Column field="duration" header={t('prescriptions.headers.duration')} />
+          <Column header={t('prescriptions.headers.medications')} body={medicationsBodyTemplate} />
           <Column header={t('prescriptions.headers.renewable')} body={renewableBodyTemplate} style={{ width: '10rem' }} />
           <Column field="createdAt" header={t('prescriptions.headers.date')} body={dateBodyTemplate} sortable />
-          <Column body={actionBodyTemplate} header={t('prescriptions.headers.actions')} style={{ width: '10rem' }} />
+          <Column body={actionBodyTemplate} header={t('prescriptions.headers.actions')} style={{ width: '13rem' }} />
         </DataTable>
       )}
 
@@ -363,99 +434,131 @@ const Prescriptions: React.FC = () => {
             />
           </div>
 
-          {/* Medication AutoComplete */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.medication')}</label>
-            <AutoComplete
-              value={selectedMedicament}
-              suggestions={medicamentSuggestions}
-              completeMethod={searchMedicaments}
-              field="nom"
-              onChange={(e) => {
-                setSelectedMedicament(e.value);
-                if (typeof e.value === 'string') {
-                  setFormData({ ...formData, medicationName: e.value });
-                }
-              }}
-              onSelect={onMedicamentSelect}
-              placeholder={t('prescriptions.form.searchMedication')}
-              className="w-full"
-              dropdown
-              forceSelection={false}
-              itemTemplate={(item: Medicament) => (
-                <div>
-                  <div className="font-semibold">{item.nom}</div>
-                  <div className="text-sm text-500">{item.dci1} — {item.forme} — {item.dosage1} {item.uniteDosage1}</div>
+          {/* Medications (one or more) */}
+          <div className="col-12">
+            <h3 className="text-lg font-semibold mb-3 mt-2">{t('prescriptions.form.medicationsTitle')}</h3>
+
+            {medications.map((med, index) => (
+              <div key={index} className="border-1 surface-border border-round p-3 mb-3">
+                <div className="flex justify-content-between align-items-center mb-2">
+                  <span className="font-medium text-600">{t('prescriptions.form.medicationN', { number: index + 1 })}</span>
+                  <Button
+                    icon="pi pi-minus"
+                    className="p-button-rounded p-button-danger p-button-text p-button-sm"
+                    onClick={() => removeMedication(index)}
+                    disabled={medications.length === 1}
+                    tooltip={t('prescriptions.form.removeMedication')}
+                    type="button"
+                  />
                 </div>
-              )}
-            />
-          </div>
 
-          {/* Dosage */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.dosage')}</label>
-            <InputText
-              value={formData.dosage || ''}
-              onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
-              className="w-full"
-              placeholder={t('prescriptions.form.dosagePlaceholder')}
-            />
-          </div>
+                <div className="grid">
+                  {/* Medication AutoComplete */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.medication')}</label>
+                    <AutoComplete
+                      value={med.medicationName}
+                      suggestions={medicamentSuggestions}
+                      completeMethod={searchMedicaments}
+                      field="nom"
+                      onChange={(e) => {
+                        if (typeof e.value === 'string') {
+                          updateMedication(index, 'medicationName', e.value);
+                        } else if (e.value?.nom) {
+                          updateMedication(index, 'medicationName', e.value.nom);
+                        }
+                      }}
+                      onSelect={(e) => onMedicamentSelect(index, e.value as Medicament)}
+                      placeholder={t('prescriptions.form.searchMedication')}
+                      className="w-full"
+                      dropdown
+                      forceSelection={false}
+                      itemTemplate={(item: Medicament) => (
+                        <div>
+                          <div className="font-semibold">{item.nom}</div>
+                          <div className="text-sm text-500">{item.dci1} — {item.forme} — {item.dosage1} {item.uniteDosage1}</div>
+                        </div>
+                      )}
+                    />
+                  </div>
 
-          {/* Pharmaceutical Form */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.pharmaceuticalForm')}</label>
-            <InputText
-              value={formData.pharmaceuticalForm || ''}
-              onChange={(e) => setFormData({ ...formData, pharmaceuticalForm: e.target.value })}
-              className="w-full"
-              placeholder={t('prescriptions.form.pharmaceuticalFormPlaceholder')}
-            />
-          </div>
+                  {/* Dosage */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.dosage')}</label>
+                    <InputText
+                      value={med.dosage || ''}
+                      onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
+                      className="w-full"
+                      placeholder={t('prescriptions.form.dosagePlaceholder')}
+                    />
+                  </div>
 
-          {/* Quantity */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.quantity')}</label>
-            <InputNumber
-              value={formData.quantity}
-              onValueChange={(e) => setFormData({ ...formData, quantity: e.value })}
-              className="w-full"
-              min={1}
-            />
-          </div>
+                  {/* Pharmaceutical Form */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.pharmaceuticalForm')}</label>
+                    <InputText
+                      value={med.pharmaceuticalForm || ''}
+                      onChange={(e) => updateMedication(index, 'pharmaceuticalForm', e.target.value)}
+                      className="w-full"
+                      placeholder={t('prescriptions.form.pharmaceuticalFormPlaceholder')}
+                    />
+                  </div>
 
-          {/* Frequency */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.frequency')}</label>
-            <InputText
-              value={formData.frequency || ''}
-              onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-              className="w-full"
-              placeholder={t('prescriptions.form.frequencyPlaceholder')}
-            />
-          </div>
+                  {/* Quantity */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.quantity')}</label>
+                    <InputNumber
+                      value={med.quantity}
+                      onValueChange={(e) => updateMedication(index, 'quantity', e.value)}
+                      className="w-full"
+                      min={1}
+                    />
+                  </div>
 
-          {/* Duration */}
-          <div className="col-12 md:col-6 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.duration')}</label>
-            <InputText
-              value={formData.duration || ''}
-              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-              className="w-full"
-              placeholder={t('prescriptions.form.durationPlaceholder')}
-            />
-          </div>
+                  {/* Frequency */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.frequency')}</label>
+                    <InputText
+                      value={med.frequency || ''}
+                      onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
+                      className="w-full"
+                      placeholder={t('prescriptions.form.frequencyPlaceholder')}
+                    />
+                  </div>
 
-          {/* Instructions */}
-          <div className="col-12 field">
-            <label className="block font-medium mb-2">{t('prescriptions.form.instructions')}</label>
-            <InputTextarea
-              value={formData.instructions || ''}
-              onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-              className="w-full"
-              rows={3}
-              autoResize
-              placeholder={t('prescriptions.form.instructionsPlaceholder')}
+                  {/* Duration */}
+                  <div className="col-12 md:col-6 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.duration')}</label>
+                    <InputText
+                      value={med.duration || ''}
+                      onChange={(e) => updateMedication(index, 'duration', e.target.value)}
+                      className="w-full"
+                      placeholder={t('prescriptions.form.durationPlaceholder')}
+                    />
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="col-12 field">
+                    <label className="block font-medium mb-2">{t('prescriptions.form.instructions')}</label>
+                    <InputTextarea
+                      value={med.instructions || ''}
+                      onChange={(e) => updateMedication(index, 'instructions', e.target.value)}
+                      className="w-full"
+                      rows={3}
+                      autoResize
+                      placeholder={t('prescriptions.form.instructionsPlaceholder')}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              label={t('prescriptions.form.addMedication')}
+              icon="pi pi-plus"
+              className="p-button-outlined p-button-sm"
+              onClick={addMedication}
+              type="button"
             />
           </div>
 
@@ -484,6 +587,116 @@ const Prescriptions: React.FC = () => {
             />
           </div>
         </div>
+      </Dialog>
+
+      {/* View Dialog (read-only) */}
+      <Dialog
+        visible={viewDialogVisible}
+        onHide={() => setViewDialogVisible(false)}
+        header={t('prescriptions.viewDialog')}
+        className="w-11/12 md:w-8 lg:w-8"
+        footer={
+          <div className="flex justify-content-end">
+            <Button
+              label={t('common.close')}
+              icon="pi pi-times"
+              className="p-button-text"
+              onClick={() => setViewDialogVisible(false)}
+            />
+          </div>
+        }
+      >
+        {viewingPrescription && (
+          <div>
+            {/* Header info */}
+            <div className="grid mb-3">
+              <div className="col-12 md:col-6">
+                <div className="text-sm text-500">{t('prescriptions.headers.patient')}</div>
+                <div className="font-medium">
+                  {viewingPrescription.consultation?.patient
+                    ? `${viewingPrescription.consultation.patient.lastName} ${viewingPrescription.consultation.patient.firstName}`
+                    : '—'}
+                </div>
+              </div>
+              <div className="col-12 md:col-6">
+                <div className="text-sm text-500">{t('common.date')}</div>
+                <div className="font-medium">
+                  {new Date(viewingPrescription.createdAt).toLocaleDateString('fr-FR')}
+                </div>
+              </div>
+              {viewingPrescription.consultation?.reason && (
+                <div className="col-12">
+                  <div className="text-sm text-500">{t('prescriptions.form.consultation')}</div>
+                  <div className="font-medium">
+                    {viewingPrescription.consultation.referenceNumber} — {viewingPrescription.consultation.reason}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Medications */}
+            <h3 className="text-lg font-semibold mb-3">{t('prescriptions.form.medicationsTitle')}</h3>
+            {(viewingPrescription.medications || []).map((med, index) => (
+              <div key={med.id ?? index} className="border-1 surface-border border-round p-3 mb-3">
+                <div className="font-semibold mb-2">{med.medicationName}</div>
+                <div className="grid">
+                  {med.dosage && (
+                    <div className="col-12 md:col-6">
+                      <div className="text-sm text-500">{t('prescriptions.form.dosage')}</div>
+                      <div>{med.dosage}</div>
+                    </div>
+                  )}
+                  {med.pharmaceuticalForm && (
+                    <div className="col-12 md:col-6">
+                      <div className="text-sm text-500">{t('prescriptions.form.pharmaceuticalForm')}</div>
+                      <div>{med.pharmaceuticalForm}</div>
+                    </div>
+                  )}
+                  {med.quantity != null && (
+                    <div className="col-12 md:col-6">
+                      <div className="text-sm text-500">{t('prescriptions.form.quantity')}</div>
+                      <div>{med.quantity}</div>
+                    </div>
+                  )}
+                  {med.frequency && (
+                    <div className="col-12 md:col-6">
+                      <div className="text-sm text-500">{t('prescriptions.form.frequency')}</div>
+                      <div>{med.frequency}</div>
+                    </div>
+                  )}
+                  {med.duration && (
+                    <div className="col-12 md:col-6">
+                      <div className="text-sm text-500">{t('prescriptions.form.duration')}</div>
+                      <div>{med.duration}</div>
+                    </div>
+                  )}
+                  {med.instructions && (
+                    <div className="col-12">
+                      <div className="text-sm text-500">{t('prescriptions.form.instructions')}</div>
+                      <div>{med.instructions}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Footer info */}
+            <div className="flex align-items-center gap-2 mt-3">
+              {viewingPrescription.isRenewable ? (
+                <Tag value={t('prescriptions.renewable')} severity="success" />
+              ) : (
+                <Tag value={t('prescriptions.notRenewable')} severity="warning" />
+              )}
+            </div>
+
+            {viewingPrescription.notes && (
+              <div className="mt-3">
+                <div className="text-sm text-500">{t('prescriptions.form.notes')}</div>
+                <div>{viewingPrescription.notes}</div>
+              </div>
+            )}
+          </div>
+        )}
       </Dialog>
     </div>
   );

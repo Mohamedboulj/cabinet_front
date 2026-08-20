@@ -14,8 +14,9 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://localhost:8000',
         changeOrigin: true,
+        secure: false, // Symfony dev cert is self-signed/expired; Node ignores it, browser never sees it
       },
     },
   },
