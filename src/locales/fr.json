@@ -48,6 +48,7 @@
         "consultations": "Consultations",
         "prescriptions": "Ordonnances",
         "invoices": "Facturation",
+        "pregnancies": "Grossesses",
         "users": "Utilisateurs",
         "settings": "Paramètres"
     },
@@ -149,6 +150,7 @@
             "history": "Antécédents",
             "consultations": "Consultations ({{count}})",
             "appointments": "Rendez-vous ({{count}})",
+            "pregnancies": "Grossesses ({{count}})",
             "activityHistory": "Historique des activités"
         },
         "info": {
@@ -758,6 +760,534 @@
         "consultation": "Consultation",
         "followUp": "Suivi",
         "examination": "Examen",
-        "emergency": "Urgence"
+        "emergency": "Urgence",
+        "prenatal": "Prénatal",
+        "postpartum": "Post-partum"
+    },
+    "pregnancy": {
+        "title": "Suivi de grossesse",
+        "newPregnancy": "Nouvelle grossesse",
+        "noPregnancies": "Aucune grossesse trouvée",
+        "loadError": "Impossible de charger les grossesses",
+        "created": "Grossesse créée",
+        "updated": "Grossesse mise à jour",
+        "deleted": "Grossesse supprimée",
+        "deleteError": "Impossible de supprimer la grossesse",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette grossesse ?",
+        "closed": "Grossesse clôturée",
+        "closeError": "Impossible de clôturer la grossesse",
+        "closeConfirm": "Êtes-vous sûr de vouloir clôturer cette grossesse ?",
+        "reopened": "Grossesse réouverte",
+        "reopenError": "Impossible de réouvrir la grossesse",
+        "existingOngoing": "Cette patiente a déjà une grossesse en cours.",
+        "openExisting": "Ouvrir la grossesse existante",
+        "onlyFemale": "Seules les patientes de sexe féminin peuvent avoir une grossesse.",
+        "filters": {
+            "all": "Toutes",
+            "active": "En cours",
+            "dueSoon": "Terme proche",
+            "alerts": "Alertes"
+        },
+        "headers": {
+            "reference": "Référence",
+            "patient": "Patiente",
+            "doctor": "Médecin",
+            "lmp": "DDR",
+            "edd": "DPA",
+            "gestationalAge": "Âge gestationnel",
+            "trimester": "Trimestre",
+            "status": "Statut",
+            "riskLevel": "Risque",
+            "daysRemaining": "Jours restants",
+            "actions": "Actions"
+        },
+        "close": {
+            "title": "Clôturer la grossesse",
+            "status": "Statut de clôture",
+            "reason": "Motif"
+        },
+        "wizard": {
+            "title": "Nouvelle grossesse",
+            "steps": {
+                "patient": "Patiente",
+                "dating": "Datation",
+                "details": "Détails"
+            },
+            "selectPatient": "Sélectionner une patiente",
+            "doctor": "Médecin",
+            "lmp": "Date des dernières règles (DDR) *",
+            "eddPreview": "DPA calculée",
+            "eddOverride": "Date de terme (DPA)",
+            "eddSource": "Source de la DPA",
+            "gravida": "Gestité (G)",
+            "para": "Parité (P)",
+            "abortions": "Avortements",
+            "livingChildren": "Enfants vivants",
+            "isMultiple": "Grossesse multiple",
+            "fetusCount": "Nombre de fœtus",
+            "bloodGroup": "Groupe sanguin",
+            "rhesus": "Rhésus",
+            "riskLevel": "Niveau de risque",
+            "riskFactors": "Facteurs de risque",
+            "prePregnancyWeight": "Poids avant grossesse (kg)",
+            "height": "Taille (cm)",
+            "obstetricHistoryNotes": "Antécédents obstétricaux",
+            "medicalHistoryNotes": "Antécédents médicaux",
+            "submit": "Créer la grossesse"
+        },
+        "detail": {
+            "notFound": "Grossesse introuvable",
+            "loadError": "Impossible de charger la grossesse",
+            "dueIn": "Terme dans {{count}} jours",
+            "overdue": "Terme dépassé de {{count}} jours (J+{{count}})",
+            "gravidaPara": "G{{gravida}}P{{para}}",
+            "bmi": "IMC",
+            "tabs": {
+                "overview": "Aperçu",
+                "timeline": "Chronologie",
+                "schedule": "Calendrier",
+                "visits": "Visites prénatales",
+                "ultrasounds": "Échographies",
+                "labs": "Bilans",
+                "delivery": "Accouchement",
+                "postpartum": "Post-partum",
+                "charts": "Courbes",
+                "documents": "Documents",
+                "print": "Carnet"
+            }
+        },
+        "alerts": {
+            "title": "Alertes",
+            "noAlerts": "Aucune alerte",
+            "inboxTitle": "Boîte d'alertes"
+        },
+        "schedule": {
+            "generate": "Générer les rendez-vous",
+            "generateSuccess": "Rendez-vous générés",
+            "generateError": "Impossible de générer les rendez-vous",
+            "closedError": "Impossible de générer un calendrier pour une grossesse clôturée",
+            "targetWeek": "Semaine {{week}}",
+            "recordLink": "Voir le dossier"
+        },
+        "timeline": {
+            "empty": "Aucun événement"
+        },
+        "visits": {
+            "newVisit": "Nouvelle visite",
+            "editVisit": "Modifier la visite",
+            "loadError": "Impossible de charger les visites",
+            "created": "Visite créée",
+            "updated": "Visite mise à jour",
+            "deleted": "Visite supprimée",
+            "deleteError": "Impossible de supprimer la visite",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette visite ?",
+            "noVisits": "Aucune visite prénatale",
+            "form": {
+                "visitDate": "Date de la visite",
+                "consultationId": "Consultation liée",
+                "doctor": "Médecin",
+                "weight": "Poids (kg)",
+                "bloodPressureSystolic": "TA systolique",
+                "bloodPressureDiastolic": "TA diastolique",
+                "fundalHeight": "Hauteur utérine (cm)",
+                "fetalHeartRate": "BCF (bpm)",
+                "fetalMovements": "Mouvements fœtaux",
+                "fetalPresentation": "Présentation",
+                "edema": "Œdèmes",
+                "proteinuria": "Protéinurie",
+                "glycosuria": "Glycosurie",
+                "uterineContractions": "Contractions utérines",
+                "cervixExam": "Examen du col",
+                "complaints": "Plaintes",
+                "examination": "Examen clinique",
+                "diagnosis": "Diagnostic",
+                "recommendations": "Recommandations",
+                "notes": "Notes",
+                "nextVisitDate": "Prochaine visite"
+            },
+            "headers": {
+                "visitNumber": "N°",
+                "date": "Date",
+                "ga": "AG",
+                "weight": "Poids",
+                "bp": "TA",
+                "fhr": "BCF",
+                "actions": "Actions"
+            }
+        },
+        "ultrasounds": {
+            "newUltrasound": "Nouvelle échographie",
+            "editUltrasound": "Modifier l'échographie",
+            "loadError": "Impossible de charger les échographies",
+            "created": "Échographie créée",
+            "updated": "Échographie mise à jour",
+            "deleted": "Échographie supprimée",
+            "deleteError": "Impossible de supprimer l'échographie",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette échographie ?",
+            "noUltrasounds": "Aucune échographie",
+            "applyDating": "Utiliser pour la datation",
+            "applyDatingSuccess": "Datation mise à jour depuis l'échographie",
+            "applyDatingError": "Impossible de dater à partir de cette échographie",
+            "efwHint": "L'EFW est calculée automatiquement si AC et FL sont renseignés",
+            "form": {
+                "type": "Type *",
+                "performedAt": "Date de l'examen",
+                "prenatalVisitId": "Visite liée",
+                "performedBy": "Réalisée par",
+                "fetusLabel": "Fœtus (jumeaux)",
+                "biometry": "Biométrie (mm)",
+                "crl": "LCC",
+                "bpd": "BIP",
+                "hc": "PC",
+                "ac": "PA",
+                "fl": "LF",
+                "efw": "EPF (g)",
+                "efwPercentile": "Percentile EPF",
+                "nuchalTranslucency": "Clarté nucale (mm)",
+                "amnioticFluidIndex": "Index amniotique",
+                "amnioticFluid": "Liquide amniotique",
+                "placentaLocation": "Localisation placentaire",
+                "placentaGrade": "Grade placentaire",
+                "presentation": "Présentation",
+                "fetalHeartRate": "BCF (bpm)",
+                "cervicalLength": "Longueur du col (mm)",
+                "dopplerUmbilicalPi": "Doppler ombilical (IP)",
+                "dopplerNotes": "Notes Doppler",
+                "findings": "Constatations",
+                "conclusion": "Conclusion",
+                "isNormal": "Examen normal"
+            },
+            "headers": {
+                "date": "Date",
+                "type": "Type",
+                "ga": "AG",
+                "efw": "EPF",
+                "conclusion": "Conclusion",
+                "actions": "Actions"
+            }
+        },
+        "labs": {
+            "prescribePanel": "Prescrire le bilan",
+            "prescribeSuccess": "Bilan prescrit",
+            "prescribeError": "Impossible de prescrire le bilan",
+            "newLab": "Nouveau test",
+            "editLab": "Résultat du test",
+            "loadError": "Impossible de charger les bilans",
+            "created": "Test créé",
+            "updated": "Résultat enregistré",
+            "deleted": "Test supprimé",
+            "deleteError": "Impossible de supprimer le test",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce test ?",
+            "noLabs": "Aucun bilan",
+            "mandatory": "Obligatoire",
+            "form": {
+                "category": "Catégorie *",
+                "testCode": "Code *",
+                "testName": "Nom du test *",
+                "prescribedAt": "Prescrit le",
+                "gestationalWeeks": "SA",
+                "value": "Valeur",
+                "unit": "Unité",
+                "referenceRange": "Valeurs normales",
+                "result": "Résultat",
+                "resultAt": "Date du résultat",
+                "isCritical": "Résultat critique",
+                "notes": "Notes"
+            },
+            "headers": {
+                "test": "Test",
+                "category": "Catégorie",
+                "prescribedAt": "Prescrit le",
+                "result": "Résultat",
+                "actions": "Actions"
+            }
+        },
+        "delivery": {
+            "title": "Accouchement",
+            "notDelivered": "Aucun accouchement enregistré",
+            "newDelivery": "Enregistrer l'accouchement",
+            "editDelivery": "Modifier l'accouchement",
+            "loadError": "Impossible de charger l'accouchement",
+            "created": "Accouchement enregistré",
+            "updated": "Accouchement mis à jour",
+            "deleted": "Accouchement supprimé",
+            "deleteError": "Impossible de supprimer l'accouchement",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet accouchement ?",
+            "alreadyExists": "Cette grossesse a déjà un accouchement enregistré",
+            "addNewborn": "Ajouter un nouveau-né",
+            "editNewborn": "Modifier le nouveau-né",
+            "removeNewborn": "Retirer",
+            "newbornDeleted": "Nouveau-né supprimé",
+            "newbornDeleteError": "Impossible de supprimer le nouveau-né",
+            "form": {
+                "deliveryAt": "Date et heure *",
+                "mode": "Mode d'accouchement *",
+                "gestationalWeeksAtBirth": "SA à la naissance *",
+                "gestationalDaysAtBirth": "Jours",
+                "place": "Lieu",
+                "attendedBy": "Praticien",
+                "indication": "Indication",
+                "laborDurationMinutes": "Durée du travail (min)",
+                "anesthesia": "Anesthésie",
+                "episiotomy": "Épisiotomie",
+                "perinealTear": "Déchirure périnéale",
+                "bloodLossMl": "Pertes sanguines (ml)",
+                "complications": "Complications",
+                "outcome": "Issue"
+            },
+            "newbornForm": {
+                "birthOrder": "Ordre de naissance",
+                "sex": "Sexe *",
+                "weightGrams": "Poids (g) *",
+                "lengthCm": "Taille (cm)",
+                "headCircumferenceCm": "Périmètre crânien (cm)",
+                "apgar1": "Apgar 1min",
+                "apgar5": "Apgar 5min",
+                "apgar10": "Apgar 10min",
+                "isAlive": "Vivant",
+                "resuscitationRequired": "Réanimation nécessaire",
+                "nicuAdmission": "Admission en néonatologie",
+                "feedingType": "Type d'allaitement",
+                "congenitalAnomalies": "Anomalies congénitales",
+                "notes": "Notes"
+            },
+            "headers": {
+                "termCategory": "Terme"
+            }
+        },
+        "postpartum": {
+            "title": "Post-partum",
+            "newVisit": "Nouvelle visite",
+            "editVisit": "Modifier la visite",
+            "loadError": "Impossible de charger les visites post-partum",
+            "created": "Visite créée",
+            "updated": "Visite mise à jour",
+            "deleted": "Visite supprimée",
+            "deleteError": "Impossible de supprimer la visite",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette visite ?",
+            "noVisits": "Aucune visite post-partum",
+            "edpsWarning": "Score EDPS élevé (≥13) — dépistage dépression post-partum à envisager",
+            "immunizationsTitle": "Immunisations",
+            "newImmunization": "Nouvelle immunisation",
+            "immunizationCreated": "Immunisation enregistrée",
+            "immunizationDeleted": "Immunisation supprimée",
+            "immunizationDeleteError": "Impossible de supprimer l'immunisation",
+            "immunizationDeleteConfirm": "Êtes-vous sûr de vouloir supprimer cette immunisation ?",
+            "noImmunizations": "Aucune immunisation",
+            "form": {
+                "visitDate": "Date de la visite",
+                "consultationId": "Consultation liée",
+                "weight": "Poids (kg)",
+                "bloodPressureSystolic": "TA systolique",
+                "bloodPressureDiastolic": "TA diastolique",
+                "temperature": "Température (°C)",
+                "uterineInvolution": "Involution utérine",
+                "lochia": "Lochies",
+                "perinealHealing": "Cicatrisation périnéale",
+                "breastExam": "Examen des seins",
+                "breastfeedingStatus": "Statut allaitement",
+                "breastfeedingIssues": "Difficultés d'allaitement",
+                "edpsScore": "Score EDPS (0-30)",
+                "contraceptionCounseled": "Conseil contraception donné",
+                "contraceptionMethod": "Méthode contraceptive",
+                "complications": "Complications",
+                "notes": "Notes"
+            },
+            "immunizationForm": {
+                "type": "Type *",
+                "administeredAt": "Date d'administration *",
+                "dose": "Dose",
+                "batchNumber": "N° de lot",
+                "notes": "Notes"
+            }
+        },
+        "charts": {
+            "weight": "Poids",
+            "bloodPressure": "Tension artérielle",
+            "fundalHeight": "Hauteur utérine",
+            "efw": "Estimation de poids fœtal",
+            "weightKg": "Poids (kg)",
+            "week": "Semaine",
+            "noData": "Pas assez de données pour afficher ce graphique"
+        },
+        "documents": {
+            "title": "Documents",
+            "upload": "Téléverser un document",
+            "loadError": "Impossible de charger les documents",
+            "uploaded": "Document téléversé",
+            "uploadError": "Impossible de téléverser le document",
+            "deleted": "Document supprimé",
+            "deleteError": "Impossible de supprimer le document",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce document ?",
+            "noDocuments": "Aucun document",
+            "download": "Télécharger",
+            "preview": "Aperçu",
+            "form": {
+                "file": "Fichier *",
+                "type": "Type *",
+                "title": "Titre *",
+                "description": "Description",
+                "documentDate": "Date du document",
+                "issuedBy": "Émis par",
+                "isConfidential": "Confidentiel",
+                "ultrasoundId": "Échographie liée"
+            }
+        },
+        "print": {
+            "title": "Carnet de grossesse",
+            "loadError": "Impossible de charger le carnet",
+            "patient": "Patiente",
+            "doctor": "Médecin",
+            "visitsTitle": "Visites prénatales",
+            "ultrasoundsTitle": "Échographies"
+        },
+        "enums": {
+            "status": {
+                "ONGOING": "En cours",
+                "COMPLETED": "Terminée",
+                "MISCARRIED": "Fausse couche",
+                "TERMINATED": "Interrompue",
+                "LOST_TO_FOLLOW_UP": "Perdue de vue"
+            },
+            "eddSource": {
+                "LMP": "DDR",
+                "ULTRASOUND": "Échographie",
+                "CLINICAL": "Clinique"
+            },
+            "riskLevel": {
+                "LOW": "Faible",
+                "MODERATE": "Modéré",
+                "HIGH": "Élevé"
+            },
+            "rhesus": {
+                "POSITIVE": "Positif",
+                "NEGATIVE": "Négatif"
+            },
+            "fetalMovements": {
+                "PRESENT": "Présents",
+                "REDUCED": "Diminués",
+                "ABSENT": "Absents"
+            },
+            "fetalPresentation": {
+                "CEPHALIC": "Céphalique",
+                "BREECH": "Siège",
+                "TRANSVERSE": "Transverse",
+                "UNKNOWN": "Inconnue"
+            },
+            "edema": {
+                "NONE": "Aucun",
+                "MILD": "Léger",
+                "MODERATE": "Modéré",
+                "SEVERE": "Sévère"
+            },
+            "proteinuria": {
+                "NEGATIVE": "Négative",
+                "TRACE": "Traces",
+                "ONE_PLUS": "+",
+                "TWO_PLUS": "++",
+                "THREE_PLUS": "+++"
+            },
+            "ultrasoundType": {
+                "DATING": "Datation",
+                "NUCHAL_TRANSLUCENCY": "Clarté nucale",
+                "MORPHOLOGY": "Morphologique",
+                "GROWTH": "Croissance",
+                "DOPPLER": "Doppler",
+                "OTHER": "Autre"
+            },
+            "amnioticFluid": {
+                "NORMAL": "Normal",
+                "OLIGOHYDRAMNIOS": "Oligoamnios",
+                "POLYHYDRAMNIOS": "Hydramnios"
+            },
+            "labCategory": {
+                "BLOOD_GROUP": "Groupe sanguin",
+                "SEROLOGY": "Sérologie",
+                "CBC": "NFS",
+                "GLUCOSE": "Glycémie",
+                "URINE": "Urines",
+                "OTHER": "Autre"
+            },
+            "labResult": {
+                "PENDING": "En attente",
+                "NORMAL": "Normal",
+                "ABNORMAL": "Anormal",
+                "POSITIVE": "Positif",
+                "NEGATIVE": "Négatif",
+                "IMMUNE": "Immunisée",
+                "NOT_IMMUNE": "Non immunisée"
+            },
+            "deliveryMode": {
+                "VAGINAL_SPONTANEOUS": "Voie basse spontanée",
+                "VAGINAL_INSTRUMENTAL": "Voie basse instrumentale",
+                "CESAREAN_PLANNED": "Césarienne programmée",
+                "CESAREAN_EMERGENCY": "Césarienne en urgence"
+            },
+            "anesthesia": {
+                "NONE": "Aucune",
+                "LOCAL": "Locale",
+                "EPIDURAL": "Péridurale",
+                "SPINAL": "Rachianesthésie",
+                "GENERAL": "Générale"
+            },
+            "outcome": {
+                "LIVE_BIRTH": "Naissance vivante",
+                "STILLBIRTH": "Mort-né",
+                "NEONATAL_DEATH": "Décès néonatal"
+            },
+            "termCategory": {
+                "PRETERM": "Prématuré",
+                "TERM": "À terme",
+                "POST_TERM": "Post-terme"
+            },
+            "sex": {
+                "M": "Masculin",
+                "F": "Féminin"
+            },
+            "feedingType": {
+                "BREAST": "Allaitement maternel",
+                "FORMULA": "Lait artificiel",
+                "MIXED": "Mixte"
+            },
+            "uterineInvolution": {
+                "NORMAL": "Normale",
+                "DELAYED": "Retardée"
+            },
+            "lochia": {
+                "NORMAL": "Normales",
+                "ABNORMAL": "Anormales"
+            },
+            "immunizationType": {
+                "INFLUENZA": "Grippe",
+                "COVID": "Covid-19",
+                "ANTI_D": "Anti-D"
+            },
+            "scheduleStatus": {
+                "DONE": "Fait",
+                "OVERDUE": "En retard",
+                "DUE": "À faire",
+                "UPCOMING": "À venir"
+            },
+            "scheduleType": {
+                "PRENATAL_VISIT": "Visite prénatale",
+                "ULTRASOUND": "Échographie",
+                "LAB_PANEL": "Bilan"
+            }
+        },
+        "riskFactors": {
+            "AGE_35_PLUS": "Âge ≥ 35 ans",
+            "AGE_18_MINUS": "Âge < 18 ans",
+            "PREVIOUS_CESAREAN": "Césarienne antérieure",
+            "PREVIOUS_MISCARRIAGE": "Fausse couche antérieure",
+            "DIABETES": "Diabète",
+            "HYPERTENSION": "Hypertension",
+            "OBESITY": "Obésité",
+            "MULTIPLE_PREGNANCY": "Grossesse multiple",
+            "SMOKING": "Tabagisme",
+            "RH_INCOMPATIBILITY": "Incompatibilité Rhésus"
+        },
+        "tools": {
+            "eddError": "Impossible de calculer la DPA"
+        }
     }
 }

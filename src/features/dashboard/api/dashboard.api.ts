@@ -59,4 +59,9 @@ export const dashboardService = {
         const response = await api.get('/dashboard/payment-methods');
         return response.data;
     },
+
+    async getPregnancyStats(): Promise<{ ongoing: number; highRisk: number; dueThisMonth: number; criticalAlerts: number }> {
+        const response = await api.get('/dashboard/pregnancy-stats');
+        return response.data;
+    },
 };
