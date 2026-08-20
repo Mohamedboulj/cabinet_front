@@ -157,6 +157,25 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onHide, user }) => {
       },
     ];
 
+    if (!user?.roles.includes('ROLE_SECRETAIRE')) {
+      items.push({
+        label: t('sidebar.pregnancies'),
+        icon: 'pi pi-heart-fill',
+        template: (item: any, options: any) => (
+          <NavLink
+            to="/pregnancies"
+            className={({ isActive }) =>
+              `p-panelmenu-header-link ${isActive ? 'router-link-active' : ''}`
+            }
+            onClick={onHide}
+          >
+            <span className={options.iconClassName}></span>
+            <span className={options.labelClassName}>{item.label}</span>
+          </NavLink>
+        ),
+      });
+    }
+
     if (user?.roles.includes('ROLE_ADMIN')) {
       items.push({
         label: t('sidebar.users'),

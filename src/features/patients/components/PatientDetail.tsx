@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientService } from '@/features/patients/api/patients.api';
 import { auditLogService } from '@/features/activity/api/auditLog.api';
-import type { Patient, Consultation, Appointment, AuditLog } from '@/types';
+import { pregnancyService } from '@/features/pregnancy/api/pregnancy.api';
+import { useAuth } from '@/app/providers/AuthProvider';
+import type { Patient, Consultation, Appointment, AuditLog, Pregnancy } from '@/types';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -13,11 +15,13 @@ import { Tag } from 'primereact/tag';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import ActivityHistory from '@/features/activity/components/ActivityHistory';
+import { RISK_LEVEL_SEVERITY, PREGNANCY_STATUS_SEVERITY } from '@/features/pregnancy/utils/pregnancy.constants';
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { hasRole } = useAuth();
   const toast = useRef<Toast>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -25,13 +29,28 @@ const PatientDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [auditLoading, setAuditLoading] = useState(true);
+  const canViewPregnancies = hasRole('ROLE_MEDECIN') || hasRole('ROLE_ADMIN');
+  const [pregnancies, setPregnancies] = useState<Pregnancy[]>([]);
+  const [pregnanciesLoading, setPregnanciesLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
       loadPatient(parseInt(id));
       loadAuditLogs();
+      if (canViewPregnancies) loadPregnancies(parseInt(id));
     }
   }, [id]);
+
+  const loadPregnancies = async (patientId: number) => {
+    try {
+      const response = await pregnancyService.getPatientPregnancies(patientId);
+      setPregnancies(response.data);
+    } catch {
+      setPregnancies([]);
+    } finally {
+      setPregnanciesLoading(false);
+    }
+  };
 
   const loadPatient = async (patientId: number) => {
     try {
@@ -310,6 +329,32 @@ const PatientDetail: React.FC = () => {
             </DataTable>
           </Card>
         </TabPanel>
+
+        {canViewPregnancies && (
+          <TabPanel header={t('patientDetail.tabs.pregnancies', { count: pregnancies.length })} leftIcon="pi pi-heart-fill mr-2">
+            <Card className="shadow-2">
+              <div className="flex justify-content-end mb-3">
+                <Button
+                  label={t('pregnancy.newPregnancy')}
+                  icon="pi pi-plus"
+                  className="p-button-success p-button-sm"
+                  onClick={() => navigate('/pregnancies/new', { state: { patientId: patient.id } })}
+                />
+              </div>
+              <DataTable value={pregnancies} loading={pregnanciesLoading} paginator rows={5} emptyMessage={t('pregnancy.noPregnancies')}>
+                <Column field="referenceNumber" header={t('pregnancy.headers.reference')} />
+                <Column header={t('pregnancy.headers.edd')} body={(row: Pregnancy) => new Date(row.edd).toLocaleDateString('fr-FR')} />
+                <Column header={t('pregnancy.headers.status')} body={(row: Pregnancy) => <Tag value={t(`pregnancy.enums.status.${row.status}`)} severity={PREGNANCY_STATUS_SEVERITY[row.status]} />} />
+                <Column header={t('pregnancy.headers.riskLevel')} body={(row: Pregnancy) => <Tag value={t(`pregnancy.enums.riskLevel.${row.riskLevel}`)} severity={RISK_LEVEL_SEVERITY[row.riskLevel]} />} />
+                <Column
+                  body={(row: Pregnancy) => (
+                    <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-sm" onClick={() => navigate(`/pregnancies/${row.id}`)} />
+                  )}
+                />
+              </DataTable>
+            </Card>
+          </TabPanel>
+        )}
 
         <TabPanel header={t('patientDetail.tabs.activityHistory')} leftIcon="pi pi-history mr-2">
           <ActivityHistory logs={auditLogs} loading={auditLoading} />

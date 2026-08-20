@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dashboardService } from '@/features/dashboard/api/dashboard.api';
+import { useAuth } from '@/app/providers/AuthProvider';
 import type { DashboardStats } from '@/types';
 import { Card } from 'primereact/card';
 import DashboardSkeleton from '@/features/dashboard/components/skeletons/DashboardSkeleton';
@@ -12,11 +13,17 @@ import { getCurrency } from '@/utils/currencyUtils';
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { hasRole } = useAuth();
+  const canViewPregnancies = hasRole('ROLE_MEDECIN') || hasRole('ROLE_ADMIN');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pregnancyStats, setPregnancyStats] = useState<{ ongoing: number; highRisk: number; dueThisMonth: number; criticalAlerts: number } | null>(null);
 
   useEffect(() => {
     loadStats();
+    if (canViewPregnancies) {
+      dashboardService.getPregnancyStats().then(setPregnancyStats).catch(() => setPregnancyStats(null));
+    }
   }, []);
 
   const loadStats = async () => {
@@ -120,6 +127,20 @@ const Dashboard: React.FC = () => {
             onClick={() => navigate('/invoices')}
           />
         </div>
+
+        {/* Pregnancies (ongoing) */}
+        {canViewPregnancies && pregnancyStats && (
+          <div className="col-12 md:col-6 lg:col-3">
+            <StatCard
+              title={t('pregnancy.filters.active')}
+              value={pregnancyStats.ongoing}
+              subtitle={`${pregnancyStats.highRisk} ${t('pregnancy.enums.riskLevel.HIGH').toLowerCase()} · ${pregnancyStats.criticalAlerts} ${t('pregnancy.alerts.title').toLowerCase()}`}
+              icon="pi-heart-fill"
+              color="#EC4899"
+              onClick={() => navigate('/pregnancies')}
+            />
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

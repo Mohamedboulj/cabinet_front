@@ -463,6 +463,8 @@ const Calendar: React.FC = () => {
                 { label: t('appointments.types.follow_up'), value: 'FOLLOW_UP' },
                 { label: t('appointments.types.examination'), value: 'EXAMINATION' },
                 { label: t('appointments.types.emergency'), value: 'EMERGENCY' },
+                { label: t('appointments.types.prenatal'), value: 'PRENATAL' },
+                { label: t('appointments.types.postpartum'), value: 'POSTPARTUM' },
               ]}
               onChange={(e) => setFormData({ ...formData, type: e.value })}
               placeholder={t('calendar.form.selectType')}

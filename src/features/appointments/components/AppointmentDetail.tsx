@@ -203,6 +203,8 @@ const AppointmentDetail: React.FC = () => {
             'FOLLOW_UP': t('types.followUp'),
             'EXAMINATION': t('types.examination'),
             'EMERGENCY': t('types.emergency'),
+            'PRENATAL': t('types.prenatal'),
+            'POSTPARTUM': t('types.postpartum'),
         };
         return map[type] || type;
     };
@@ -274,6 +276,8 @@ const AppointmentDetail: React.FC = () => {
         { label: t('types.followUp'), value: 'FOLLOW_UP' },
         { label: t('types.examination'), value: 'EXAMINATION' },
         { label: t('types.emergency'), value: 'EMERGENCY' },
+        { label: t('types.prenatal'), value: 'PRENATAL' },
+        { label: t('types.postpartum'), value: 'POSTPARTUM' },
     ];
 
     return (
